@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CheckersBoard : MonoBehaviour
+public class CheckersBoard
 {
     public List<CheckersPiece> Pieces { get; set; }
     public List<CheckersSquare> Squares { get; set; }
@@ -22,16 +22,22 @@ public class CheckersBoard : MonoBehaviour
                 Color squareColor = i % 2 == j % 2 ? GlobalProperties.DarkColor : Color.white;
               
                 CheckersSquare square = new CheckersSquare(boardPosition, absolutePosition, squareColor);
-                CheckersPiece piece = null;
 
-                if (j <= 2 && squareColor == GlobalProperties.DarkColor)
-                    piece = new CheckersPiece(id, boardPosition, absolutePosition, Color.black);
-                else if (j >= GlobalProperties.SquaresPerBoardSide - 3 && squareColor == GlobalProperties.DarkColor)
-                    piece = new CheckersPiece(id, boardPosition, absolutePosition, Color.white);
+                if((j <= 2 && squareColor == GlobalProperties.DarkColor) || (j >= GlobalProperties.SquaresPerBoardSide - 3 && squareColor == GlobalProperties.DarkColor))
+                {
+                    CheckersPiece piece;
 
 
-                if(piece != null)
+                    if (j <= 2 && squareColor == GlobalProperties.DarkColor)
+                        piece = new CheckersPiece(id, boardPosition, absolutePosition, Color.black);
+                    else
+                        piece = new CheckersPiece(id, boardPosition, absolutePosition, Color.white);
+
+                    piece.PieceGameObject.GetComponent<ObjectLinker>().LinkedObject = piece;
                     Pieces.Add(piece);
+                }
+
+                square.SquareGameObject.GetComponent<ObjectLinker>().LinkedObject = square;
                 Squares.Add(square);
 
                 id++;

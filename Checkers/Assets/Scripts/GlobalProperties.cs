@@ -8,9 +8,10 @@ public class GlobalProperties : MonoBehaviour
     public static float SquareLength { get; private set; }
     public static Mesh Cube { get; private set; }
     public static Mesh Cylinder { get; private set; }
-
     public static Material DefaultMaterial { get; private set; }
+    public static Material HighlighterMaterial { get; private set; }
     public static Color DarkColor { get; private set; }
+    public static GameObject ContainerObject { get; private set; }
 
     [SerializeField]
     int squaresPerBoardSide = 8;
@@ -28,7 +29,13 @@ public class GlobalProperties : MonoBehaviour
     Material defaultMaterial;
 
     [SerializeField]
+    Material highlighterMaterial;
+
+    [SerializeField]
     Color darkColor;
+
+    [SerializeField]
+    GameObject containerObject;
 
     public void InitializeGlobalProperties()
     {
@@ -36,7 +43,9 @@ public class GlobalProperties : MonoBehaviour
         SquareLength = squareLength;
         Cube = cube;
         DefaultMaterial = defaultMaterial;
+        HighlighterMaterial = highlighterMaterial;
         DarkColor = darkColor;
         Cylinder = cylinder;
+        ContainerObject = containerObject;
     }
 }

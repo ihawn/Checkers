@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CheckersPiece : MonoBehaviour
+public class CheckersPiece
 {
     public int Id { get; }
     public Vector2 BoardPosition { get; set; }
@@ -18,6 +18,6 @@ public class CheckersPiece : MonoBehaviour
         BoardPosition = boardPosition;
         Color = color;
         IsKing = false;
-        PieceGameObject = GameManager.MakeGameObjectForObject(GlobalProperties.Cylinder, name, absolutePosition, -Vector3.forward * GlobalProperties.SquareLength * 0.6f, new Vector3(90, 0, 0), color, this, scaleFactor: 0.8f, heightScaleFactor: 0.1f);       
+        PieceGameObject = GameManager.MakeGameObjectForObject(GlobalProperties.Cylinder, name, absolutePosition, -Vector3.forward * GlobalProperties.SquareLength * 0.6f, new Vector3(90, 0, 0), color, scaleFactor: 0.8f, heightScaleFactor: 0.1f);       
     }
 }
