@@ -11,6 +11,7 @@ public class GlobalProperties : MonoBehaviour
     public static Material DefaultMaterial { get; private set; }
     public static Material HighlighterMaterial { get; private set; }
     public static Color DarkColor { get; private set; }
+    public static Color DarkerColor { get; private set; }
     public static GameObject ContainerObject { get; private set; }
 
     [SerializeField]
@@ -35,6 +36,9 @@ public class GlobalProperties : MonoBehaviour
     Color darkColor;
 
     [SerializeField]
+    Color darkerColor;
+
+    [SerializeField]
     GameObject containerObject;
 
     public void InitializeGlobalProperties()
@@ -45,6 +49,7 @@ public class GlobalProperties : MonoBehaviour
         DefaultMaterial = defaultMaterial;
         HighlighterMaterial = highlighterMaterial;
         DarkColor = darkColor;
+        DarkerColor = darkerColor;
         Cylinder = cylinder;
         ContainerObject = containerObject;
     }

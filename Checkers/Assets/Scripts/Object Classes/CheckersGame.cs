@@ -11,7 +11,7 @@ public class CheckersGame
 
     public CheckersGame(PlayerType player1Type, PlayerType player2Type)
     {
-        Board = new CheckersBoard();
+        Board = new CheckersBoard(this);
         Player1 = new Player(player1Type, Color.black);
         Player2 = new Player(player2Type, Color.white);
         CurrentPlayer = Player1;

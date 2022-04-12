@@ -7,6 +7,7 @@ public class CheckersSquare
     public Vector2 BoardPosition { get; set; }
     public Color Color { get; set; }
     public GameObject SquareGameObject { get; }
+    public CheckersPiece OccupyingPiece { get; set; }
 
     public CheckersSquare(Vector2 boardPosition, Vector2 absolutePosition, Color color)
     {

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
@@ -37,6 +38,17 @@ public class GameManager : MonoBehaviour
                 if(linker.LinkedObject is CheckersPiece piece && piece.Color == Game.CurrentPlayer.PlayerColor)
                 {
                     HighlightPiece(piece);
+                    HighlightPossibleMoves(piece);
+                }
+                else if(linker.LinkedObject is CheckersSquare square)
+                {
+                    CheckersPiece selectedPiece = Game.CurrentPlayer.SelectedPiece;
+                    if(selectedPiece != null && selectedPiece.PossibleMoves.Contains(square.BoardPosition))
+                    {
+                        selectedPiece.MovePieceTo(square.BoardPosition);
+                        Highlighter.SetActive(false);
+                        ResetLastMoveHighlight();
+                    }
                 }
             }
         }
@@ -44,9 +56,27 @@ public class GameManager : MonoBehaviour
 
     void HighlightPiece(CheckersPiece piece)
     {
+        piece.PossibleMoves = Game.Board.CalculatePossibleMovesForPiece(piece);
         Game.CurrentPlayer.SelectedPiece = piece;
         Highlighter.SetActive(true);
         Highlighter.transform.position = piece.PieceGameObject.transform.position + Vector3.forward*4.5f;
+    }
+
+    void HighlightPossibleMoves(CheckersPiece piece)
+    {
+        List<CheckersSquare> darkSquares = ResetLastMoveHighlight();
+        List<GameObject> possibleMoveGameObjects = darkSquares.Where(s => piece.PossibleMoves.Contains(s.BoardPosition)).Select(x => x.SquareGameObject).ToList();
+
+        foreach(GameObject square in possibleMoveGameObjects)
+            square.GetComponent<Renderer>().material.SetColor("_Color", GlobalProperties.DarkerColor);
+    }
+
+    List<CheckersSquare> ResetLastMoveHighlight()
+    {
+        List<CheckersSquare> darkSquares = Game.Board.Squares.Where(s => s.Color == GlobalProperties.DarkColor).ToList();
+        foreach (var square in darkSquares)
+            square.SquareGameObject.GetComponent<Renderer>().material.SetColor("_Color", GlobalProperties.DarkColor);
+        return darkSquares;
     }
 
     void HighlighterInit()
