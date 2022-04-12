@@ -15,15 +15,34 @@ public class GameManager : MonoBehaviour
         GlobalProperties = GetComponent<GlobalProperties>();
         GlobalProperties.InitializeGlobalProperties();
         HighlighterInit();
-        Game = new CheckersGame(PlayerType.Human, PlayerType.Human);
+        Game = new CheckersGame(PlayerType.DumbAI, PlayerType.DumbAI);
     }
 
     void Update()
     {
-        GetInput();
+        int blackPieceCount = Game.Board.Pieces.Where(p => p.Color == Color.black && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
+        int whitePieceCount = Game.Board.Pieces.Where(p => p.Color == Color.white && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
+
+        if(blackPieceCount > 0 && whitePieceCount > 0)
+        {
+            switch (Game.CurrentPlayer.Type)
+            {
+                case PlayerType.Human:
+                    GetHumanInput();
+                    break;
+
+                case PlayerType.DumbAI:
+                    GetDumbInput();
+                    break;
+
+                case PlayerType.SmartAI:
+
+                    break;
+            }
+        }       
     }
 
-    void GetInput()
+    void GetHumanInput()
     {
         if(Input.GetMouseButtonDown(0))
         {
@@ -35,7 +54,7 @@ public class GameManager : MonoBehaviour
                 Debug.Log(hit.transform.gameObject.name);
                 ObjectLinker linker = hit.transform.gameObject.GetComponent<ObjectLinker>();
 
-                if(linker.LinkedObject is CheckersPiece piece && piece.Color == Game.CurrentPlayer.PlayerColor)
+                if(linker.LinkedObject is CheckersPiece piece)// && piece.Color == Game.CurrentPlayer.PlayerColor)
                 {
                     HighlightPiece(piece);
                     HighlightPossibleMoves(piece);
@@ -48,10 +67,32 @@ public class GameManager : MonoBehaviour
                         selectedPiece.MovePieceTo(square.BoardPosition);
                         Highlighter.SetActive(false);
                         ResetLastMoveHighlight();
+
+                        SwitchPlayer();
                     }
                 }
             }
         }
+    }
+
+    void GetDumbInput()
+    {
+        List<CheckersPiece> piecesOfOwnColor = Game.Board.Pieces.Where(p => p.Color == Game.CurrentPlayer.PlayerColor).ToList();
+        foreach(CheckersPiece piece in piecesOfOwnColor)
+        {
+            Game.Board.Pieces.FirstOrDefault(p => p.BoardPosition == piece.BoardPosition).PossibleMoves = Game.Board.CalculatePossibleMovesForPiece(piece);
+        }
+
+        List<CheckersPiece> piecesWithMoves = Game.Board.Pieces.Where(p => p.PossibleMoves.Count > 0 && p.Color == Game.CurrentPlayer.PlayerColor).ToList();
+        CheckersPiece selectedPiece = piecesWithMoves[Random.Range(0, piecesWithMoves.Count)];
+        Vector2 chosenMove = selectedPiece.PossibleMoves[Random.Range(0, selectedPiece.PossibleMoves.Count)];
+        selectedPiece.MovePieceTo(chosenMove);
+        SwitchPlayer();
+    }
+
+    void SwitchPlayer()
+    {
+        Game.CurrentPlayer = Game.CurrentPlayer.PlayerColor == Color.black ? Game.Player2 : Game.Player1;
     }
 
     void HighlightPiece(CheckersPiece piece)
@@ -104,5 +145,19 @@ public class GameManager : MonoBehaviour
         g.transform.parent = GlobalProperties.ContainerObject.transform;
 
         return g;
+    }
+
+    public static void DestroyPiece(CheckersPiece piece, CheckersBoard board)
+    {
+        board.Squares.FirstOrDefault(s => s.BoardPosition == piece.BoardPosition).OccupyingPiece = null;
+        Destroy(piece.PieceGameObject);
+        board.Pieces.Remove(piece);
+    }
+
+    public static void Coronation(CheckersPiece piece)
+    {
+        GameObject crown = Instantiate(GlobalProperties.Crown);
+        crown.transform.position = piece.PieceGameObject.transform.position - new Vector3(0, 0, 0.6f); ;
+        crown.transform.parent = piece.PieceGameObject.transform;
     }
 }

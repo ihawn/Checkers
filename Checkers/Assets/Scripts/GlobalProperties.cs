@@ -13,6 +13,7 @@ public class GlobalProperties : MonoBehaviour
     public static Color DarkColor { get; private set; }
     public static Color DarkerColor { get; private set; }
     public static GameObject ContainerObject { get; private set; }
+    public static GameObject Crown { get; private set; }
 
     [SerializeField]
     int squaresPerBoardSide = 8;
@@ -41,6 +42,9 @@ public class GlobalProperties : MonoBehaviour
     [SerializeField]
     GameObject containerObject;
 
+    [SerializeField]
+    GameObject crown;
+
     public void InitializeGlobalProperties()
     {
         SquaresPerBoardSide = squaresPerBoardSide;
@@ -52,5 +56,6 @@ public class GlobalProperties : MonoBehaviour
         DarkerColor = darkerColor;
         Cylinder = cylinder;
         ContainerObject = containerObject;
+        Crown = crown;
     }
 }
