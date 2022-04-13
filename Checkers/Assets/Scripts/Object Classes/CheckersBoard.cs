@@ -8,6 +8,8 @@ public class CheckersBoard
     public List<CheckersPiece> Pieces { get; set; }
     public List<CheckersSquare> Squares { get; set; }
     public CheckersGame Game { get; set; }
+    public int BlackPiecesCount { get; set; }
+    public int WhitePiecesCount { get; set; }
 
     public CheckersBoard(CheckersGame game)
     {

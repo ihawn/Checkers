@@ -26,7 +26,7 @@ public class CheckersPiece
         PieceGameObject = GameManager.MakeGameObjectForObject(GlobalProperties.Cylinder, name, absolutePosition, -Vector3.forward * GlobalProperties.SquareLength * 0.6f, new Vector3(90, 0, 0), color, scaleFactor: 0.8f, heightScaleFactor: 0.1f);       
     }
 
-    public void MovePieceTo(Vector2 newBoardPosition)
+    public void MovePieceTo(Vector2 newBoardPosition, bool treeTraversalMove = false)
     {
         Vector2 boardOffset = newBoardPosition - BoardPosition;
         Vector2 movementOffset = boardOffset * GlobalProperties.SquareLength;
@@ -36,9 +36,11 @@ public class CheckersPiece
             pieceThatWasJumped = ParentBoard.Pieces.FirstOrDefault(p => p.BoardPosition == new Vector2(BoardPosition.x + boardOffset.x / 2, BoardPosition.y + boardOffset.y / 2));
 
         if (pieceThatWasJumped != null)
-            GameManager.DestroyPiece(pieceThatWasJumped, ParentBoard);
+            GameManager.DestroyPiece(pieceThatWasJumped, ParentBoard, treeTraversalMove);
 
-        PieceGameObject.transform.position += new Vector3(movementOffset.x, movementOffset.y, 0);
+        if(!treeTraversalMove)
+            PieceGameObject.transform.position += new Vector3(movementOffset.x, movementOffset.y, 0);
+        
         BoardPosition = newBoardPosition;
         PossibleMoves = ParentBoard.CalculatePossibleMovesForPiece(this);
         ParentBoard.Game.CurrentPlayer.SelectedPiece = null;
@@ -48,16 +50,20 @@ public class CheckersPiece
         newSquare.OccupyingPiece = this;
         SquareOccupying = newSquare;
 
+        ParentBoard.WhitePiecesCount = ParentBoard.Pieces.Where(p => p.Color == Color.white).Count();
+        ParentBoard.BlackPiecesCount = ParentBoard.Pieces.Where(p => p.Color == Color.black).Count();
+
         CheckForKing();
     }
 
-    void CheckForKing()
+    void CheckForKing(bool treeTraversalMove = false)
     {
         if((BoardPosition.y == GlobalProperties.SquaresPerBoardSide - 1 && Color == Color.black) ||
             (BoardPosition.y == 0 && Color == Color.white))
         {
             IsKing = true;
-            GameManager.Coronation(this);
+            if(!treeTraversalMove)
+                GameManager.Coronation(this);
         }
     }
 }

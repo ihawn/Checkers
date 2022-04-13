@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System;
 
 public class GameManager : MonoBehaviour
 {
@@ -15,15 +16,17 @@ public class GameManager : MonoBehaviour
         GlobalProperties = GetComponent<GlobalProperties>();
         GlobalProperties.InitializeGlobalProperties();
         HighlighterInit();
-        Game = new CheckersGame(PlayerType.DumbAI, PlayerType.DumbAI);
+        Game = new CheckersGame(PlayerType.Human, PlayerType.SmartAI);
     }
 
     void Update()
     {
-        int blackPieceCount = Game.Board.Pieces.Where(p => p.Color == Color.black && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
-        int whitePieceCount = Game.Board.Pieces.Where(p => p.Color == Color.white && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
+        int blackPiecesCount = Game.Board.Pieces.Where(p => p.Color == Color.black && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
+        int whitePiecesCount = Game.Board.Pieces.Where(p => p.Color == Color.white && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
+        Game.Board.BlackPiecesCount = blackPiecesCount;
+        Game.Board.WhitePiecesCount = whitePiecesCount;
 
-        if(blackPieceCount > 0 && whitePieceCount > 0)
+        if(blackPiecesCount > 0 && whitePiecesCount > 0)
         {
             switch (Game.CurrentPlayer.Type)
             {
@@ -36,7 +39,7 @@ public class GameManager : MonoBehaviour
                     break;
 
                 case PlayerType.SmartAI:
-
+                    GetSmartInput(3);               
                     break;
             }
         }       
@@ -84,9 +87,18 @@ public class GameManager : MonoBehaviour
         }
 
         List<CheckersPiece> piecesWithMoves = Game.Board.Pieces.Where(p => p.PossibleMoves.Count > 0 && p.Color == Game.CurrentPlayer.PlayerColor).ToList();
-        CheckersPiece selectedPiece = piecesWithMoves[Random.Range(0, piecesWithMoves.Count)];
-        Vector2 chosenMove = selectedPiece.PossibleMoves[Random.Range(0, selectedPiece.PossibleMoves.Count)];
+        CheckersPiece selectedPiece = piecesWithMoves[UnityEngine.Random.Range(0, piecesWithMoves.Count)];
+        Vector2 chosenMove = selectedPiece.PossibleMoves[UnityEngine.Random.Range(0, selectedPiece.PossibleMoves.Count)];
         selectedPiece.MovePieceTo(chosenMove);
+        SwitchPlayer();
+    }
+
+    void GetSmartInput(int depth)
+    {
+        CheckersBoard boardCopy = ObjectExtensions.Copy(Game.Board);
+        (int, CheckersBoard, Vector2, CheckersPiece) minimaxResult = TreeOptimizer.Minimax((boardCopy, Vector2.zero, null), depth, depth, Vector2.zero, Game.CurrentPlayer.PlayerColor == Color.black);
+        CheckersPiece pieceToMove = Game.Board.Pieces.FirstOrDefault(p => p.BoardPosition == minimaxResult.Item4.BoardPosition);
+        pieceToMove.MovePieceTo(minimaxResult.Item3);
         SwitchPlayer();
     }
 
@@ -147,10 +159,11 @@ public class GameManager : MonoBehaviour
         return g;
     }
 
-    public static void DestroyPiece(CheckersPiece piece, CheckersBoard board)
+    public static void DestroyPiece(CheckersPiece piece, CheckersBoard board, bool treeTraversalMove)
     {
         board.Squares.FirstOrDefault(s => s.BoardPosition == piece.BoardPosition).OccupyingPiece = null;
-        Destroy(piece.PieceGameObject);
+        if(!treeTraversalMove)
+            Destroy(piece.PieceGameObject);
         board.Pieces.Remove(piece);
     }
 
