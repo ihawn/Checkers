@@ -20,5 +20,7 @@ public enum PlayerType
 {
     Human = 0,
     DumbAI = 1,
-    SmartAI = 2
+    KindaDumbAI = 2,
+    SmartAI = 3,
+    ReallySmartAI = 4,
 }

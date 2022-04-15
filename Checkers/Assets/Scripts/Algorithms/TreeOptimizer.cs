@@ -16,7 +16,7 @@ public class TreeOptimizer
 
         if (isMaximizingPlayer)
         {
-            (int, RawCheckersBoard, (int, int), (int, int)) maxEvaluation = (int.MinValue, board.Item1, (0, 0), board.Item3);
+            (int, RawCheckersBoard, (int, int), (int, int)) maxEvaluation = (int.MinValue, board.Item1, (-1, -1), board.Item3);
             List<(RawCheckersBoard, (int, int), (int, int))> branchBoards = GeneratePositionList(board.Item1, new int[] { 1, 3 });
 
             foreach ((RawCheckersBoard, (int, int), (int, int)) branch in branchBoards)
@@ -31,7 +31,7 @@ public class TreeOptimizer
         }
         else
         {
-            (int, RawCheckersBoard, (int, int), (int, int)) minEvaluation = (int.MaxValue, board.Item1, (0, 0), board.Item3);
+            (int, RawCheckersBoard, (int, int), (int, int)) minEvaluation = (int.MaxValue, board.Item1, (-1, -1), board.Item3);
             List<(RawCheckersBoard, (int, int), (int, int))> branchBoards = GeneratePositionList(board.Item1, new int[] { 2, 4 });
 
             foreach ((RawCheckersBoard, (int, int), (int, int)) branch in branchBoards)

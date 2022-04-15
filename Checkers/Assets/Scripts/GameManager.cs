@@ -16,7 +16,7 @@ public class GameManager : MonoBehaviour
         GlobalProperties = GetComponent<GlobalProperties>();
         GlobalProperties.InitializeGlobalProperties();
         HighlighterInit();
-        Game = new CheckersGame(PlayerType.Human, PlayerType.SmartAI);
+        Game = new CheckersGame(PlayerType.DumbAI, PlayerType.SmartAI);
     }
 
     void Update()
@@ -38,8 +38,16 @@ public class GameManager : MonoBehaviour
                     GetDumbInput();
                     break;
 
+                case PlayerType.KindaDumbAI:
+                    GetSmartInput(1);
+                    break;
+
                 case PlayerType.SmartAI:
                     GetSmartInput(3);               
+                    break;
+
+                case PlayerType.ReallySmartAI:
+                    GetSmartInput(5);
                     break;
             }
         }       
@@ -54,7 +62,6 @@ public class GameManager : MonoBehaviour
 
             if (Physics.Raycast(ray, out hit, 100))
             {
-                Debug.Log(hit.transform.gameObject.name);
                 ObjectLinker linker = hit.transform.gameObject.GetComponent<ObjectLinker>();
 
                 if(linker.LinkedObject is CheckersPiece piece)// && piece.Color == Game.CurrentPlayer.PlayerColor)
@@ -96,11 +103,26 @@ public class GameManager : MonoBehaviour
     void GetSmartInput(int depth)
     {
         RawCheckersBoard rawBoard = new RawCheckersBoard(Game.Board);
-        (int, RawCheckersBoard, (int, int), (int, int)) minimaxResult = TreeOptimizer.Minimax((rawBoard, (0, 0), (0, 0)), depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0));
+        (int, RawCheckersBoard, (int, int), (int, int)) minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0));
+        
         Vector2 newMovePosition = new Vector2(minimaxResult.Item3.Item1, minimaxResult.Item3.Item2);
         Vector2 pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
+        
+        if(pieceToMovePosition.x == -1)
+            pieceToMovePosition = Game.Board.Pieces.FirstOrDefault(p => p.Color == Game.CurrentPlayer.PlayerColor && p.PossibleMoves.Count > 0).BoardPosition;
+
+        if(newMovePosition.x == -1)
+        {
+            CheckersPiece newPiece = Game.Board.Pieces.FirstOrDefault(p => p.BoardPosition == pieceToMovePosition);
+            if(newPiece.PossibleMoves.Count > 0)
+                newMovePosition = newPiece.PossibleMoves[0];
+            else
+                newMovePosition = Game.Board.Pieces.FirstOrDefault(p => p.Color == Game.CurrentPlayer.PlayerColor && p.PossibleMoves.Count > 0).PossibleMoves[0];
+        }
+
         CheckersPiece pieceToMove = Game.Board.Pieces.FirstOrDefault(p => p.BoardPosition == pieceToMovePosition);
         pieceToMove.MovePieceTo(newMovePosition);
+        Debug.Log("Moved (" + pieceToMovePosition.x + ", " + pieceToMovePosition.y + ") to (" + newMovePosition.x + ", " + newMovePosition.y + ")");
         SwitchPlayer();
     }
 
