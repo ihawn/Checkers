@@ -26,6 +26,9 @@ public class TreeOptimizer
 
                 (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(ObjectExtensions.Copy(branch), depth - 1, originalDepth, originatingMove, false, originatingPiece);
                 maxEvaluation = eval.Item1 > maxEvaluation.Item1 ? eval : maxEvaluation;
+
+                if (eval.Item1 == maxEvaluation.Item1 && UnityEngine.Random.Range(0f, 100f) <= 50f) //if there's a tie, reassign randomly to keep things interesting
+                    maxEvaluation = eval;
             }
             return maxEvaluation;
         }
@@ -41,6 +44,9 @@ public class TreeOptimizer
 
                 (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(ObjectExtensions.Copy(branch), depth - 1, originalDepth, originatingMove, true, originatingPiece);
                 minEvaluation = eval.Item1 < minEvaluation.Item1 ? eval : minEvaluation;
+
+                if (eval.Item1 == minEvaluation.Item1 && UnityEngine.Random.Range(0f, 100f) <= 50f) //if there's a tie, reassign randomly to keep things interesting
+                    minEvaluation = eval;
             }
             return minEvaluation;
         }
