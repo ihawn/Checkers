@@ -16,6 +16,7 @@ public class TreeOptimizer
 
         if (isMaximizingPlayer)
         {
+            //eval, board, move, piece
             (int, RawCheckersBoard, (int, int), (int, int)) maxEvaluation = (int.MinValue, board.Item1, (-1, -1), board.Item3);
             List<(RawCheckersBoard, (int, int), (int, int))> branchBoards = GeneratePositionList(board.Item1, new int[] { 1, 3 });
 
@@ -34,6 +35,7 @@ public class TreeOptimizer
         }
         else
         {
+            //eval, board, move, piece
             (int, RawCheckersBoard, (int, int), (int, int)) minEvaluation = (int.MaxValue, board.Item1, (-1, -1), board.Item3);
             List<(RawCheckersBoard, (int, int), (int, int))> branchBoards = GeneratePositionList(board.Item1, new int[] { 2, 4 });
 
@@ -52,6 +54,7 @@ public class TreeOptimizer
         }
     }
 
+    //returns: board, move, piece
     static List<(RawCheckersBoard, (int, int), (int, int))> GeneratePositionList(RawCheckersBoard baseBoard, int[] whoseTurn)
     {
         List<(RawCheckersBoard, (int, int), (int, int))> boardListWithGeneratingMove = new List<(RawCheckersBoard, (int, int), (int, int))>();
