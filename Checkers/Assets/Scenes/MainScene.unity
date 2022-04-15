@@ -175,9 +175,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 277ef70a91822b0449aea95116b7624a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Player1Type: 0
+  Player1Type: 3
   Player2Type: 4
-  RandomizeTieBreaker: 0
+  UsePruning: 1
 --- !u!4 &625010163
 Transform:
   m_ObjectHideFlags: 0

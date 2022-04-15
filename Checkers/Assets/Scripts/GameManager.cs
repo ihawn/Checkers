@@ -17,7 +17,7 @@ public class GameManager : MonoBehaviour
     PlayerType Player2Type;
 
     [SerializeField]
-    bool RandomizeTieBreaker;
+    bool UsePruning;
 
 
     void Awake()
@@ -115,8 +115,11 @@ public class GameManager : MonoBehaviour
 
     void GetSmartInput(int depth)
     {
+        int alpha = int.MinValue;
+        int beta = int.MaxValue;
+
         RawCheckersBoard rawBoard = new RawCheckersBoard(Game.Board);
-        (int, RawCheckersBoard, (int, int), (int, int)) minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), RandomizeTieBreaker, int.MinValue, int.MaxValue);
+        (int, RawCheckersBoard, (int, int), (int, int)) minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta);
         
         Vector2 newMovePosition = new Vector2(minimaxResult.Item3.Item1, minimaxResult.Item3.Item2);
         Vector2 pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
