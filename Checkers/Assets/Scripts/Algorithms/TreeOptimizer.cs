@@ -7,7 +7,7 @@ using System;
 public class TreeOptimizer
 {
     //returns: position evaluation, raw board, move, piece
-    public static (int, RawCheckersBoard, (int, int), (int, int)) Minimax((RawCheckersBoard, (int, int), (int, int)) board, int depth, int originalDepth, (int, int) originatingMove, bool isMaximizingPlayer, (int, int) originatingPiece)
+    public static (int, RawCheckersBoard, (int, int), (int, int)) Minimax((RawCheckersBoard, (int, int), (int, int)) board, int depth, int originalDepth, (int, int) originatingMove, bool isMaximizingPlayer, (int, int) originatingPiece, bool randomTieBreaker)
     {
         int blackCount = board.Item1.BlackPieceCount;
         int whiteCount = board.Item1.WhitePieceCount;
@@ -25,10 +25,10 @@ public class TreeOptimizer
                 originatingMove = depth == originalDepth ? branch.Item2 : originatingMove; //keep track of the base piece and base move
                 originatingPiece = depth == originalDepth ? branch.Item3 : originatingPiece;
 
-                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(ObjectExtensions.Copy(branch), depth - 1, originalDepth, originatingMove, false, originatingPiece);
+                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(ObjectExtensions.Copy(branch), depth - 1, originalDepth, originatingMove, false, originatingPiece, randomTieBreaker);
                 maxEvaluation = eval.Item1 > maxEvaluation.Item1 ? eval : maxEvaluation;
 
-                if (eval.Item1 == maxEvaluation.Item1 && UnityEngine.Random.Range(0f, 100f) <= 50f) //if there's a tie, reassign randomly to keep things interesting
+                if (randomTieBreaker && eval.Item1 == maxEvaluation.Item1 && UnityEngine.Random.Range(0f, 100f) <= 50f) //if there's a tie, reassign randomly to keep things interesting
                     maxEvaluation = eval;
             }
             return maxEvaluation;
@@ -44,11 +44,68 @@ public class TreeOptimizer
                 originatingMove = depth == originalDepth ? branch.Item2 : originatingMove; //keep track of the base piece and base move
                 originatingPiece = depth == originalDepth ? branch.Item3 : originatingPiece;
 
-                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(ObjectExtensions.Copy(branch), depth - 1, originalDepth, originatingMove, true, originatingPiece);
+                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(ObjectExtensions.Copy(branch), depth - 1, originalDepth, originatingMove, true, originatingPiece, randomTieBreaker);
                 minEvaluation = eval.Item1 < minEvaluation.Item1 ? eval : minEvaluation;
 
-                if (eval.Item1 == minEvaluation.Item1 && UnityEngine.Random.Range(0f, 100f) <= 50f) //if there's a tie, reassign randomly to keep things interesting
+                if (randomTieBreaker && eval.Item1 == minEvaluation.Item1 && UnityEngine.Random.Range(0f, 100f) <= 50f) //if there's a tie, reassign randomly to keep things interesting
                     minEvaluation = eval;
+            }
+            return minEvaluation;
+        }
+    }
+
+    //overload for alpha/beta pruning
+    //returns: position evaluation, raw board, move, piece
+    public static (int, RawCheckersBoard, (int, int), (int, int)) Minimax((RawCheckersBoard, (int, int), (int, int)) board, int depth, int originalDepth, (int, int) originatingMove, bool isMaximizingPlayer, (int, int) originatingPiece, bool randomTieBreaker, int alpha, int beta)
+    {
+        int blackCount = board.Item1.BlackPieceCount;
+        int whiteCount = board.Item1.WhitePieceCount;
+        if (depth == 0 || blackCount == 0 || whiteCount == 0)
+            return (blackCount - whiteCount, board.Item1, originatingMove, originatingPiece); //black player wants to maximize this value
+
+        if (isMaximizingPlayer)
+        {
+            //eval, board, move, piece
+            (int, RawCheckersBoard, (int, int), (int, int)) maxEvaluation = (int.MinValue, board.Item1, (-1, -1), board.Item3);
+            List<(RawCheckersBoard, (int, int), (int, int))> branchBoards = GeneratePositionList(board.Item1, new int[] { 1, 3 });
+
+            foreach ((RawCheckersBoard, (int, int), (int, int)) branch in branchBoards)
+            {
+                originatingMove = depth == originalDepth ? branch.Item2 : originatingMove; //keep track of the base piece and base move
+                originatingPiece = depth == originalDepth ? branch.Item3 : originatingPiece;
+
+                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(ObjectExtensions.Copy(branch), depth - 1, originalDepth, originatingMove, false, originatingPiece, randomTieBreaker, alpha, beta);
+                maxEvaluation = eval.Item1 > maxEvaluation.Item1 ? eval : maxEvaluation;
+
+                if (randomTieBreaker && eval.Item1 == maxEvaluation.Item1 && UnityEngine.Random.Range(0f, 100f) <= 50f) //if there's a tie, reassign randomly to keep things interesting
+                    maxEvaluation = eval;
+
+                alpha = Math.Max(alpha, eval.Item1);
+                if (beta <= alpha)
+                    break;
+            }
+            return maxEvaluation;
+        }
+        else
+        {
+            //eval, board, move, piece
+            (int, RawCheckersBoard, (int, int), (int, int)) minEvaluation = (int.MaxValue, board.Item1, (-1, -1), board.Item3);
+            List<(RawCheckersBoard, (int, int), (int, int))> branchBoards = GeneratePositionList(board.Item1, new int[] { 2, 4 });
+
+            foreach ((RawCheckersBoard, (int, int), (int, int)) branch in branchBoards)
+            {
+                originatingMove = depth == originalDepth ? branch.Item2 : originatingMove; //keep track of the base piece and base move
+                originatingPiece = depth == originalDepth ? branch.Item3 : originatingPiece;
+
+                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(ObjectExtensions.Copy(branch), depth - 1, originalDepth, originatingMove, true, originatingPiece, randomTieBreaker, alpha, beta);
+                minEvaluation = eval.Item1 < minEvaluation.Item1 ? eval : minEvaluation;
+
+                if (randomTieBreaker && eval.Item1 == minEvaluation.Item1 && UnityEngine.Random.Range(0f, 100f) <= 50f) //if there's a tie, reassign randomly to keep things interesting
+                    minEvaluation = eval;
+
+                beta = Math.Min(beta, eval.Item1);
+                if (beta <= alpha)
+                    break;
             }
             return minEvaluation;
         }
@@ -192,7 +249,7 @@ public class RawCheckersBoard
                 if (BoardMatrix[i, j] == pieceColor[0]) //non-king
                     count++;
                 else if (BoardMatrix[i, j] == pieceColor[1]) //king
-                    count += 2;
+                    count += 3;
             }
         }
 

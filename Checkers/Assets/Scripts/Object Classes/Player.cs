@@ -23,4 +23,5 @@ public enum PlayerType
     KindaDumbAI = 2,
     SmartAI = 3,
     ReallySmartAI = 4,
+    GeniusAI = 5
 }

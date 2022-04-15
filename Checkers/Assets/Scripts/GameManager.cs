@@ -10,13 +10,22 @@ public class GameManager : MonoBehaviour
     public CheckersGame Game { get; private set; }
     public GameObject Highlighter { get; private set; }
 
+    [SerializeField]
+    PlayerType Player1Type;
+
+    [SerializeField]
+    PlayerType Player2Type;
+
+    [SerializeField]
+    bool RandomizeTieBreaker;
+
 
     void Awake()
     {
         GlobalProperties = GetComponent<GlobalProperties>();
         GlobalProperties.InitializeGlobalProperties();
         HighlighterInit();
-        Game = new CheckersGame(PlayerType.DumbAI, PlayerType.SmartAI);
+        Game = new CheckersGame(Player1Type, Player2Type);
     }
 
     void Update()
@@ -48,6 +57,10 @@ public class GameManager : MonoBehaviour
 
                 case PlayerType.ReallySmartAI:
                     GetSmartInput(5);
+                    break;
+
+                case PlayerType.GeniusAI:
+                    GetSmartInput(7);
                     break;
             }
         }       
@@ -103,7 +116,7 @@ public class GameManager : MonoBehaviour
     void GetSmartInput(int depth)
     {
         RawCheckersBoard rawBoard = new RawCheckersBoard(Game.Board);
-        (int, RawCheckersBoard, (int, int), (int, int)) minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0));
+        (int, RawCheckersBoard, (int, int), (int, int)) minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), RandomizeTieBreaker, int.MinValue, int.MaxValue);
         
         Vector2 newMovePosition = new Vector2(minimaxResult.Item3.Item1, minimaxResult.Item3.Item2);
         Vector2 pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
