@@ -16,6 +16,8 @@ public class GlobalProperties : MonoBehaviour
     public static GameObject Crown { get; private set; }
     public static int KingWorth { get; private set; }
     public static int KingGuardWorth { get; private set; }
+    public static int EndGameThreshold { get; private set; }
+    public static int DrawMoveThreshold { get; private set; }
 
     [SerializeField]
     int squaresPerBoardSide = 8;
@@ -53,6 +55,12 @@ public class GlobalProperties : MonoBehaviour
     [SerializeField]
     int kingGuardWorth;
 
+    [SerializeField]
+    int endGameThreshold;
+
+    [SerializeField]
+    int drawMoveThreshold;
+
     public void InitializeGlobalProperties()
     {
         SquaresPerBoardSide = squaresPerBoardSide;
@@ -67,5 +75,7 @@ public class GlobalProperties : MonoBehaviour
         Crown = crown;
         KingWorth = kingWorth;
         KingGuardWorth = kingGuardWorth;
+        EndGameThreshold = endGameThreshold;
+        DrawMoveThreshold = drawMoveThreshold;
     }
 }

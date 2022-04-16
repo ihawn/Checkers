@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour
     public GlobalProperties GlobalProperties { get; private set; }
     public CheckersGame Game { get; private set; }
     public GameObject Highlighter { get; private set; }
+    public UIController UIController { get; private set; }
 
     [SerializeField]
     PlayerType Player1Type;
@@ -25,55 +26,120 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     bool UsePruning;
 
+    [SerializeField]
+    string CurrentPlayer;
+
 
     void Awake()
     {
         GlobalProperties = GetComponent<GlobalProperties>();
+        UIController = GetComponent<UIController>();
         GlobalProperties.InitializeGlobalProperties();
         HighlighterInit();
-        Game = new CheckersGame(Player1Type, Player2Type, Player1HeuristicId, Player2HeuristicId);
+
+        Player1Type = PlayerType.Human;
+        Player2Type = PlayerType.SmartAI;
+        UIController.ShowMenuScreen();
     }
 
     void Update()
     {
-        int blackPiecesCount = Game.Board.Pieces.Where(p => p.Color == Color.black && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
-        int whitePiecesCount = Game.Board.Pieces.Where(p => p.Color == Color.white && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
-        Game.Board.BlackPiecesCount = blackPiecesCount;
-        Game.Board.WhitePiecesCount = whitePiecesCount;
-
-        if(blackPiecesCount > 0 && whitePiecesCount > 0)
+        if(!UIController.InMenus)
         {
-            switch (Game.CurrentPlayer.Type)
+            CurrentPlayer = Game.CurrentPlayer.PlayerColor == Color.black ? "black" : "white";
+
+            int blackPiecesCount = Game.Board.Pieces.Where(p => p.Color == Color.black && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
+            int whitePiecesCount = Game.Board.Pieces.Where(p => p.Color == Color.white && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
+            Game.Board.BlackPiecesCount = blackPiecesCount;
+            Game.Board.WhitePiecesCount = whitePiecesCount;
+
+            if (blackPiecesCount > 0 && whitePiecesCount > 0)
             {
-                case PlayerType.Human:
-                    GetHumanInput();
-                    break;
+                switch (Game.CurrentPlayer.Type)
+                {
+                    case PlayerType.Human:
+                        GetHumanInput();
+                        break;
 
-                case PlayerType.DumbAI:
-                    GetDumbInput();
-                    break;
+                    case PlayerType.DumbAI:
+                        GetDumbInput();
+                        break;
 
-                case PlayerType.KindaDumbAI:
-                    GetSmartInput(1, Game.CurrentPlayer.HeuristicId);
-                    break;
+                    case PlayerType.KindaDumbAI:
+                        GetSmartInput(1, Game.CurrentPlayer.HeuristicId);
+                        break;
 
-                case PlayerType.SmartAI:
-                    GetSmartInput(3, Game.CurrentPlayer.HeuristicId);               
-                    break;
+                    case PlayerType.SmartAI:
+                        GetSmartInput(3, Game.CurrentPlayer.HeuristicId);
+                        break;
 
-                case PlayerType.ReallySmartAI:
-                    GetSmartInput(5, Game.CurrentPlayer.HeuristicId);
-                    break;
+                    case PlayerType.ReallySmartAI:
+                        GetSmartInput(5, Game.CurrentPlayer.HeuristicId);
+                        break;
 
-                case PlayerType.GeniusAI:
-                    GetSmartInput(7, Game.CurrentPlayer.HeuristicId);
-                    break;
+                    case PlayerType.GeniusAI:
+                        GetSmartInput(7, Game.CurrentPlayer.HeuristicId);
+                        break;
 
-                case PlayerType.Cthulu:
-                    GetSmartInput(9, Game.CurrentPlayer.HeuristicId);
-                    break;
+                    case PlayerType.Cthulu:
+                        GetSmartInput(9, Game.CurrentPlayer.HeuristicId);
+                        break;
+                }
             }
-        }       
+            else
+            {
+                UIController.ShowGameOverScreen(whitePiecesCount == 0 ? "black" : "white");
+            }
+        }
+    }
+
+    public void SetPlayerType(string arg)
+    {
+        var args = arg.Split(',');
+        string player = args[0];
+        string playerType = args[1];
+
+        PlayerType type;
+        switch (playerType)
+        {
+            case "Human":
+                type = PlayerType.Human;
+                break;
+            case "Very Easy":
+                type = PlayerType.DumbAI;
+                break;
+            case "Easy":
+                type = PlayerType.KindaDumbAI;
+                break;
+            case "Medium":
+                type = PlayerType.SmartAI;
+                break;
+            case "Hard":
+                type = PlayerType.ReallySmartAI;
+                break;
+            case "Expert":
+                type = PlayerType.GeniusAI;
+                break;
+            case "Master":
+                type = PlayerType.Cthulu;
+                break;
+            default:
+                type = PlayerType.Human;
+                break;
+        }
+
+        if (player == "1")
+            Player1Type = type;
+        else if (player == "2")
+            Player2Type = type;
+    }    
+
+    public void StartGame()
+    {
+        foreach (Transform t in GlobalProperties.ContainerObject.transform)
+            Destroy(t.gameObject);
+        Game = new CheckersGame(Player1Type, Player2Type, Player1HeuristicId, Player2HeuristicId);
+        UIController.ShowGameOverlay(showGameStats: true);
     }
 
     void GetHumanInput()
@@ -123,9 +189,10 @@ public class GameManager : MonoBehaviour
         SwitchPlayer();
     }
 
-
     void GetSmartInput(int depth, int heuristicId)
     {
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+
         int alpha = int.MinValue;
         int beta = int.MaxValue;
 
@@ -134,7 +201,7 @@ public class GameManager : MonoBehaviour
         //eval, board, move, piece
         (int, RawCheckersBoard, (int, int), (int, int)) minEvaluation = (int.MaxValue, rawBoard, (-1, -1), (-1, -1));
         (int, RawCheckersBoard, (int, int), (int, int)) maxEvaluation = (int.MinValue, rawBoard, (-1, -1), (-1, -1));
-        (int, RawCheckersBoard, (int, int), (int, int)) minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId);
+        (int, RawCheckersBoard, (int, int), (int, int), int) minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId, 0);
         
         Vector2 newMovePosition = new Vector2(minimaxResult.Item3.Item1, minimaxResult.Item3.Item2);
         Vector2 pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
@@ -144,12 +211,11 @@ public class GameManager : MonoBehaviour
             depth -= 2;
             minEvaluation = (int.MaxValue, rawBoard, (-1, -1), (-1, -1));
             maxEvaluation = (int.MinValue, rawBoard, (-1, -1), (-1, -1));
-            minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId);
+            minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId, 0);
 
             newMovePosition = new Vector2(minimaxResult.Item3.Item1, minimaxResult.Item3.Item2);
             pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
         }
-
 
         //failsafe
         if (pieceToMovePosition.x == -1)
@@ -163,10 +229,14 @@ public class GameManager : MonoBehaviour
             else
                 newMovePosition = Game.Board.Pieces.FirstOrDefault(p => p.Color == Game.CurrentPlayer.PlayerColor && p.PossibleMoves.Count > 0).PossibleMoves[0];
         }
+        watch.Stop();
 
         CheckersPiece pieceToMove = Game.Board.Pieces.FirstOrDefault(p => p.BoardPosition == pieceToMovePosition);
         pieceToMove.MovePieceTo(newMovePosition);
+
         Debug.Log("Moved (" + pieceToMovePosition.x + ", " + pieceToMovePosition.y + ") to (" + newMovePosition.x + ", " + newMovePosition.y + ")");
+        UIController.PrintGameStats(watch.ElapsedMilliseconds/1000f, minimaxResult.Item5, minimaxResult.Item1);
+
         SwitchPlayer();
     }
 
@@ -200,6 +270,11 @@ public class GameManager : MonoBehaviour
         return darkSquares;
     }
 
+    public void TogglePruning(string state)
+    {
+        UsePruning = state == "on" ? true : false;
+    }
+
     void HighlighterInit()
     {
         Highlighter = new GameObject("Highlighter", typeof(MeshRenderer), typeof(MeshFilter));
@@ -207,7 +282,6 @@ public class GameManager : MonoBehaviour
         Highlighter.GetComponent<Renderer>().material = GlobalProperties.HighlighterMaterial;
         Highlighter.transform.localScale = Vector3.one * GlobalProperties.SquareLength * 0.9f;
         Highlighter.transform.Rotate(90, 0, 0);
-        Highlighter.transform.parent = GlobalProperties.ContainerObject.transform;
         Highlighter.SetActive(false);
     }
 

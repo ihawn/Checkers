@@ -38,9 +38,9 @@ ScriptsOnlyBuild:
     - Class: 108
       Script: {instanceID: 0}
     - Class: 114
-      Script: {instanceID: 2452}
+      Script: {instanceID: 2454}
     - Class: 114
-      Script: {instanceID: 2536}
+      Script: {instanceID: 2538}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 157
@@ -260,7 +260,7 @@ ScriptsOnlyBuild:
     className: RawImage
   - hash:
       serializedVersion: 2
-      Hash: c764fcc4af57c071c2038a5b47df1d95
+      Hash: 98ae9a3d1346948cff4233f31ca7025d
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GlobalProperties
@@ -495,4 +495,4 @@ ScriptsOnlyBuild:
   platform: 5
   scenePathNames:
   - Assets/Scenes/MainScene.unity
-  playerPath: C:/Users/Isaac/Documents/_games/Builds/Checkers/4-15-22_2/Checkers.exe
+  playerPath: C:/Users/Isaac/Documents/_games/Builds/Checkers/4-16-22/Checkers.exe

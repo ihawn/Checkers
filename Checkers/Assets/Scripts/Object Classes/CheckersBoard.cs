@@ -10,12 +10,14 @@ public class CheckersBoard
     public CheckersGame Game { get; set; }
     public int BlackPiecesCount { get; set; }
     public int WhitePiecesCount { get; set; }
+    public int AIMovesExplored { get; set; }
 
     public CheckersBoard(CheckersGame game)
     {
         Game = game;
         Pieces = new List<CheckersPiece>();
         Squares = new List<CheckersSquare>();
+        AIMovesExplored = 0;
         int id = 0;
 
         for(int i = 0; i < GlobalProperties.SquaresPerBoardSide; i++)

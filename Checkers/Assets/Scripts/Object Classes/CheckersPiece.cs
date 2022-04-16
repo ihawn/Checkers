@@ -13,6 +13,7 @@ public class CheckersPiece
     public List<Vector2> PossibleMoves { get; set; }
     public CheckersBoard ParentBoard { get; set; }
     public CheckersSquare SquareOccupying { get; set; }
+    public Queue<Vector2> PastMoves { get; private set; }
 
     public CheckersPiece(int id, Vector2 boardPosition, Vector2 absolutePosition, Color color, CheckersBoard parentBoard)
     {
