@@ -163,7 +163,8 @@ MonoBehaviour:
   darkerColor: {r: 0.07727271, g: 0.15969695, b: 0.34, a: 1}
   containerObject: {fileID: 1882362159}
   crown: {fileID: 6576153495705084420, guid: 3ff44fd26e9b4a94aaa3e61b71521388, type: 3}
-  kingWorth: 10
+  kingWorth: 2
+  kingGuardWorth: 2
 --- !u!114 &625010162
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -177,7 +178,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Player1Type: 0
-  Player2Type: 6
+  Player1HeuristicId: 4
+  Player2Type: 5
+  Player2HeuristicId: 1
   UsePruning: 1
 --- !u!4 &625010163
 Transform:

@@ -14,7 +14,13 @@ public class GameManager : MonoBehaviour
     PlayerType Player1Type;
 
     [SerializeField]
+    int Player1HeuristicId;
+
+    [SerializeField]
     PlayerType Player2Type;
+
+    [SerializeField]
+    int Player2HeuristicId;
 
     [SerializeField]
     bool UsePruning;
@@ -25,7 +31,7 @@ public class GameManager : MonoBehaviour
         GlobalProperties = GetComponent<GlobalProperties>();
         GlobalProperties.InitializeGlobalProperties();
         HighlighterInit();
-        Game = new CheckersGame(Player1Type, Player2Type);
+        Game = new CheckersGame(Player1Type, Player2Type, Player1HeuristicId, Player2HeuristicId);
     }
 
     void Update()
@@ -48,23 +54,23 @@ public class GameManager : MonoBehaviour
                     break;
 
                 case PlayerType.KindaDumbAI:
-                    GetSmartInput(1);
+                    GetSmartInput(1, Game.CurrentPlayer.HeuristicId);
                     break;
 
                 case PlayerType.SmartAI:
-                    GetSmartInput(3);               
+                    GetSmartInput(3, Game.CurrentPlayer.HeuristicId);               
                     break;
 
                 case PlayerType.ReallySmartAI:
-                    GetSmartInput(5);
+                    GetSmartInput(5, Game.CurrentPlayer.HeuristicId);
                     break;
 
                 case PlayerType.GeniusAI:
-                    GetSmartInput(7);
+                    GetSmartInput(7, Game.CurrentPlayer.HeuristicId);
                     break;
 
                 case PlayerType.Cthulu:
-                    GetSmartInput(9);
+                    GetSmartInput(9, Game.CurrentPlayer.HeuristicId);
                     break;
             }
         }       
@@ -118,16 +124,17 @@ public class GameManager : MonoBehaviour
     }
 
 
-    void GetSmartInput(int depth)
+    void GetSmartInput(int depth, int heuristicId)
     {
         int alpha = int.MinValue;
         int beta = int.MaxValue;
 
         RawCheckersBoard rawBoard = new RawCheckersBoard(Game.Board);
+
         //eval, board, move, piece
         (int, RawCheckersBoard, (int, int), (int, int)) minEvaluation = (int.MaxValue, rawBoard, (-1, -1), (-1, -1));
         (int, RawCheckersBoard, (int, int), (int, int)) maxEvaluation = (int.MinValue, rawBoard, (-1, -1), (-1, -1));
-        (int, RawCheckersBoard, (int, int), (int, int)) minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta);
+        (int, RawCheckersBoard, (int, int), (int, int)) minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId);
         
         Vector2 newMovePosition = new Vector2(minimaxResult.Item3.Item1, minimaxResult.Item3.Item2);
         Vector2 pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
@@ -137,7 +144,7 @@ public class GameManager : MonoBehaviour
             depth -= 2;
             minEvaluation = (int.MaxValue, rawBoard, (-1, -1), (-1, -1));
             maxEvaluation = (int.MinValue, rawBoard, (-1, -1), (-1, -1));
-            minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta);
+            minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId);
 
             newMovePosition = new Vector2(minimaxResult.Item3.Item1, minimaxResult.Item3.Item2);
             pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);

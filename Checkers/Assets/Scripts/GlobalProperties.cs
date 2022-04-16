@@ -15,6 +15,7 @@ public class GlobalProperties : MonoBehaviour
     public static GameObject ContainerObject { get; private set; }
     public static GameObject Crown { get; private set; }
     public static int KingWorth { get; private set; }
+    public static int KingGuardWorth { get; private set; }
 
     [SerializeField]
     int squaresPerBoardSide = 8;
@@ -49,6 +50,9 @@ public class GlobalProperties : MonoBehaviour
     [SerializeField]
     int kingWorth;
 
+    [SerializeField]
+    int kingGuardWorth;
+
     public void InitializeGlobalProperties()
     {
         SquaresPerBoardSide = squaresPerBoardSide;
@@ -62,5 +66,6 @@ public class GlobalProperties : MonoBehaviour
         ContainerObject = containerObject;
         Crown = crown;
         KingWorth = kingWorth;
+        KingGuardWorth = kingGuardWorth;
     }
 }

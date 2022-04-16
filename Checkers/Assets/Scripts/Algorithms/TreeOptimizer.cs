@@ -7,17 +7,15 @@ using System;
 public class TreeOptimizer
 {
     //returns: position evaluation, raw board, move, piece
-    public static (int, RawCheckersBoard, (int, int), (int, int)) Minimax((RawCheckersBoard, (int, int), (int, int)) board, (int, RawCheckersBoard, (int, int), (int, int)) minEvaluation, (int, RawCheckersBoard, (int, int), (int, int)) maxEvaluation, int depth, int originalDepth, (int, int) originatingMove, bool isMaximizingPlayer, (int, int) originatingPiece, bool usePruning, int alpha, int beta)
+    public static (int, RawCheckersBoard, (int, int), (int, int)) Minimax((RawCheckersBoard, (int, int), (int, int)) board, (int, RawCheckersBoard, (int, int), (int, int)) minEvaluation, (int, RawCheckersBoard, (int, int), (int, int)) maxEvaluation, int depth, int originalDepth, (int, int) originatingMove, bool isMaximizingPlayer, (int, int) originatingPiece, bool usePruning, int alpha, int beta, int heuristicId)
     {
         if(board.Item1 == null)
-        {
-            Debug.Log("board null");
-        }
+            return (Heuristics.Heuristic(board.Item1, heuristicId), board.Item1, originatingMove, originatingPiece);
 
         int blackCount = board.Item1.BlackPieceCount;
         int whiteCount = board.Item1.WhitePieceCount;
         if (depth == 0 || blackCount == 0 || whiteCount == 0)
-            return (blackCount - whiteCount, board.Item1, originatingMove, originatingPiece); //black player wants to maximize this value
+            return (Heuristics.Heuristic(board.Item1, heuristicId), board.Item1, originatingMove, originatingPiece); //black player wants to maximize this value
 
         if (isMaximizingPlayer)
         {
@@ -28,7 +26,7 @@ public class TreeOptimizer
                 originatingMove = depth == originalDepth ? branch.Item2 : originatingMove; //keep track of the base piece and base move
                 originatingPiece = depth == originalDepth ? branch.Item3 : originatingPiece;
 
-                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMove, false, originatingPiece, usePruning, alpha, beta);
+                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMove, false, originatingPiece, usePruning, alpha, beta, heuristicId);
                 maxEvaluation = eval.Item1 > maxEvaluation.Item1 ? eval : maxEvaluation;
 
                 if(usePruning)
@@ -49,7 +47,7 @@ public class TreeOptimizer
                 originatingMove = depth == originalDepth ? branch.Item2 : originatingMove; //keep track of the base piece and base move
                 originatingPiece = depth == originalDepth ? branch.Item3 : originatingPiece;
 
-                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMove, true, originatingPiece, usePruning, alpha, beta);
+                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMove, true, originatingPiece, usePruning, alpha, beta, heuristicId);
                 minEvaluation = eval.Item1 < minEvaluation.Item1 ? eval : minEvaluation;
 
                 if(usePruning)
@@ -121,19 +119,9 @@ public class RawCheckersBoard
             else
                 BoardMatrix[(int)piece.BoardPosition.x, (int)piece.BoardPosition.y] = piece.Color == Color.black ? 1 : 2;
             if (piece.Color == Color.black)
-            {
-                if (piece.IsKing)
-                    BlackPieceCount += GlobalProperties.KingWorth;
-                else
-                    BlackPieceCount++;
-            }              
+                BlackPieceCount++;
             else
-            {
-                if (piece.IsKing)
-                    WhitePieceCount += GlobalProperties.KingWorth;
-                else
-                    WhitePieceCount++;
-            }           
+                WhitePieceCount++;          
         }
     }
     public void MovePiece((int, int) coord1, (int, int) coord2)
@@ -155,10 +143,10 @@ public class RawCheckersBoard
                     WhitePieceCount--;
                     break;
                 case 3:
-                    BlackPieceCount -= GlobalProperties.KingWorth;
+                    BlackPieceCount--;
                     break;
                 case 4:
-                    BlackPieceCount -= GlobalProperties.KingWorth;
+                    WhitePieceCount--;
                     break;
             }
 

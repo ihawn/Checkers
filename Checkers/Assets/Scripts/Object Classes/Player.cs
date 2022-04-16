@@ -7,12 +7,14 @@ public class Player
     public PlayerType Type { get; private set; }
     public Color PlayerColor { get; private set; }
     public CheckersPiece SelectedPiece { get; set; }
+    public int HeuristicId { get; set; }
     public int Id { get; set; }
 
-    public Player(PlayerType type, Color playerColor)
+    public Player(PlayerType type, int heuristicId, Color playerColor)
     {
         Type = type;
         PlayerColor = playerColor;
+        HeuristicId = heuristicId;
     }
 }
 
