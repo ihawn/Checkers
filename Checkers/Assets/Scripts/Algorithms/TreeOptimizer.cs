@@ -7,8 +7,13 @@ using System;
 public class TreeOptimizer
 {
     //returns: position evaluation, raw board, move, piece
-    public static (int, RawCheckersBoard, (int, int), (int, int)) Minimax((RawCheckersBoard, (int, int), (int, int)) board, int depth, int originalDepth, (int, int) originatingMove, bool isMaximizingPlayer, (int, int) originatingPiece, bool usePruning, int alpha, int beta)
+    public static (int, RawCheckersBoard, (int, int), (int, int)) Minimax((RawCheckersBoard, (int, int), (int, int)) board, (int, RawCheckersBoard, (int, int), (int, int)) minEvaluation, (int, RawCheckersBoard, (int, int), (int, int)) maxEvaluation, int depth, int originalDepth, (int, int) originatingMove, bool isMaximizingPlayer, (int, int) originatingPiece, bool usePruning, int alpha, int beta)
     {
+        if(board.Item1 == null)
+        {
+            Debug.Log("board null");
+        }
+
         int blackCount = board.Item1.BlackPieceCount;
         int whiteCount = board.Item1.WhitePieceCount;
         if (depth == 0 || blackCount == 0 || whiteCount == 0)
@@ -16,8 +21,6 @@ public class TreeOptimizer
 
         if (isMaximizingPlayer)
         {
-            //eval, board, move, piece
-            (int, RawCheckersBoard, (int, int), (int, int)) maxEvaluation = (int.MinValue, board.Item1, (-1, -1), board.Item3);
             List<(RawCheckersBoard, (int, int), (int, int))> branchBoards = GeneratePositionList(board.Item1, new int[] { 1, 3 });
 
             foreach ((RawCheckersBoard, (int, int), (int, int)) branch in branchBoards)
@@ -25,7 +28,7 @@ public class TreeOptimizer
                 originatingMove = depth == originalDepth ? branch.Item2 : originatingMove; //keep track of the base piece and base move
                 originatingPiece = depth == originalDepth ? branch.Item3 : originatingPiece;
 
-                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(ObjectExtensions.Copy(branch), depth - 1, originalDepth, originatingMove, false, originatingPiece, usePruning, alpha, beta);
+                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMove, false, originatingPiece, usePruning, alpha, beta);
                 maxEvaluation = eval.Item1 > maxEvaluation.Item1 ? eval : maxEvaluation;
 
                 if(usePruning)
@@ -39,8 +42,6 @@ public class TreeOptimizer
         }
         else
         {
-            //eval, board, move, piece
-            (int, RawCheckersBoard, (int, int), (int, int)) minEvaluation = (int.MaxValue, board.Item1, (-1, -1), board.Item3);
             List<(RawCheckersBoard, (int, int), (int, int))> branchBoards = GeneratePositionList(board.Item1, new int[] { 2, 4 });
 
             foreach ((RawCheckersBoard, (int, int), (int, int)) branch in branchBoards)
@@ -48,7 +49,7 @@ public class TreeOptimizer
                 originatingMove = depth == originalDepth ? branch.Item2 : originatingMove; //keep track of the base piece and base move
                 originatingPiece = depth == originalDepth ? branch.Item3 : originatingPiece;
 
-                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(ObjectExtensions.Copy(branch), depth - 1, originalDepth, originatingMove, true, originatingPiece, usePruning, alpha, beta);
+                (int, RawCheckersBoard, (int, int), (int, int)) eval = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMove, true, originatingPiece, usePruning, alpha, beta);
                 minEvaluation = eval.Item1 < minEvaluation.Item1 ? eval : minEvaluation;
 
                 if(usePruning)
@@ -61,6 +62,7 @@ public class TreeOptimizer
             return minEvaluation;
         }
     }
+
 
     //returns: board, move, piece
     static List<(RawCheckersBoard, (int, int), (int, int))> GeneratePositionList(RawCheckersBoard baseBoard, int[] whoseTurn)
@@ -75,47 +77,42 @@ public class TreeOptimizer
                 if(whoseTurn.Contains(baseBoard.BoardMatrix[i,j]))
                 {
                     List<(int, int)> moves = baseBoard.GetMovesForPiece((i, j));
-                    if (moves.Count > 0)
+                    foreach((int, int) move in moves)
                     {
-                        currentPlayerPiecesAndMoves.Add((i, j, moves));
+                        RawCheckersBoard branchBoard = ObjectExtensions.Copy(baseBoard);
+                        branchBoard.MovePiece((i, j), move);
+                        boardListWithGeneratingMove.Add((branchBoard, move, (i, j)));
                     }
                 }
             }
         }    
 
-        foreach (var pieceAndMoves in currentPlayerPiecesAndMoves)
+        try
         {
-            foreach ((int, int) move in pieceAndMoves.Item3)
-            {
-                RawCheckersBoard branchBoard = ObjectExtensions.Copy(baseBoard);
-                (int, int) pieceFromCopy = (pieceAndMoves.Item1, pieceAndMoves.Item2);
-                branchBoard.MovePiece(pieceFromCopy, move);
-                boardListWithGeneratingMove.Add((branchBoard, move, pieceFromCopy));
-            }
+            System.Random r = new System.Random();
+            boardListWithGeneratingMove.Sort((x, y) => r.Next(-1, 1));
+            return boardListWithGeneratingMove;
         }
-
-        System.Random r = new System.Random();
-        boardListWithGeneratingMove.Sort((x, y) => r.Next(-1, 1));
-        return boardListWithGeneratingMove;
+        catch
+        {
+            return boardListWithGeneratingMove;
+        }
     }
 }
 
+//Bare bones checkers board class designed to be deep-copied quickly. Only to be used for decision tree checking
 public class RawCheckersBoard
 {
     //0 = empty, 1 = black, 2 = white, 3 = black king, 4 = white king
     public int[,] BoardMatrix { get; set; }
-    public int BlackPieceCount
-    {
-        get { return CountPieces(new int[] { 1, 3 }); }
-    }
-    public int WhitePieceCount
-    {
-        get { return CountPieces(new int[] { 2, 4 }); }
-    }
+    public int BlackPieceCount { get; set; }
+    public int WhitePieceCount { get; set; }
 
     public RawCheckersBoard(CheckersBoard oopBoard)
     {
         BoardMatrix = new int[GlobalProperties.SquaresPerBoardSide, GlobalProperties.SquaresPerBoardSide];
+        BlackPieceCount = 0;
+        WhitePieceCount = 0;
 
         foreach(CheckersPiece piece in oopBoard.Pieces)
         {
@@ -123,9 +120,22 @@ public class RawCheckersBoard
                 BoardMatrix[(int)piece.BoardPosition.x, (int)piece.BoardPosition.y] = piece.Color == Color.black ? 3 : 4;
             else
                 BoardMatrix[(int)piece.BoardPosition.x, (int)piece.BoardPosition.y] = piece.Color == Color.black ? 1 : 2;
+            if (piece.Color == Color.black)
+            {
+                if (piece.IsKing)
+                    BlackPieceCount += GlobalProperties.KingWorth;
+                else
+                    BlackPieceCount++;
+            }              
+            else
+            {
+                if (piece.IsKing)
+                    WhitePieceCount += GlobalProperties.KingWorth;
+                else
+                    WhitePieceCount++;
+            }           
         }
     }
-
     public void MovePiece((int, int) coord1, (int, int) coord2)
     {
         //movement
@@ -135,7 +145,25 @@ public class RawCheckersBoard
 
         //check jump
         if (Math.Abs(coord1.Item1 - coord2.Item1) == 2)
+        {
+            switch(BoardMatrix[(coord1.Item1 + coord2.Item1) / 2, (coord1.Item2 + coord2.Item2) / 2])
+            {
+                case 1:
+                    BlackPieceCount--;
+                    break;
+                case 2:
+                    WhitePieceCount--;
+                    break;
+                case 3:
+                    BlackPieceCount -= GlobalProperties.KingWorth;
+                    break;
+                case 4:
+                    BlackPieceCount -= GlobalProperties.KingWorth;
+                    break;
+            }
+
             BoardMatrix[(coord1.Item1 + coord2.Item1) / 2, (coord1.Item2 + coord2.Item2) / 2] = 0;
+        }
 
         //check king
         if (BoardMatrix[coord2.Item1, coord2.Item2] == 1 && coord2.Item2 == GlobalProperties.SquaresPerBoardSide - 1) //black king
@@ -190,22 +218,5 @@ public class RawCheckersBoard
         }
 
         return moves;
-    }
-
-    public int CountPieces(int[] pieceColor)
-    {
-        int count = 0;
-        for(int i = 0; i < GlobalProperties.SquaresPerBoardSide; i++)
-        {
-            for(int j = 0; j < GlobalProperties.SquaresPerBoardSide; j++)
-            {
-                if (BoardMatrix[i, j] == pieceColor[0]) //non-king
-                    count++;
-                else if (BoardMatrix[i, j] == pieceColor[1]) //king
-                    count += 3;
-            }
-        }
-
-        return count;
     }
 }

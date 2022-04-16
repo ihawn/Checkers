@@ -62,6 +62,10 @@ public class GameManager : MonoBehaviour
                 case PlayerType.GeniusAI:
                     GetSmartInput(7);
                     break;
+
+                case PlayerType.Cthulu:
+                    GetSmartInput(9);
+                    break;
             }
         }       
     }
@@ -77,7 +81,7 @@ public class GameManager : MonoBehaviour
             {
                 ObjectLinker linker = hit.transform.gameObject.GetComponent<ObjectLinker>();
 
-                if(linker.LinkedObject is CheckersPiece piece)// && piece.Color == Game.CurrentPlayer.PlayerColor)
+                if(linker.LinkedObject is CheckersPiece piece && piece.Color == Game.CurrentPlayer.PlayerColor)
                 {
                     HighlightPiece(piece);
                     HighlightPossibleMoves(piece);
@@ -113,18 +117,35 @@ public class GameManager : MonoBehaviour
         SwitchPlayer();
     }
 
+
     void GetSmartInput(int depth)
     {
         int alpha = int.MinValue;
         int beta = int.MaxValue;
 
         RawCheckersBoard rawBoard = new RawCheckersBoard(Game.Board);
-        (int, RawCheckersBoard, (int, int), (int, int)) minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta);
+        //eval, board, move, piece
+        (int, RawCheckersBoard, (int, int), (int, int)) minEvaluation = (int.MaxValue, rawBoard, (-1, -1), (-1, -1));
+        (int, RawCheckersBoard, (int, int), (int, int)) maxEvaluation = (int.MinValue, rawBoard, (-1, -1), (-1, -1));
+        (int, RawCheckersBoard, (int, int), (int, int)) minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta);
         
         Vector2 newMovePosition = new Vector2(minimaxResult.Item3.Item1, minimaxResult.Item3.Item2);
         Vector2 pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
         
-        if(pieceToMovePosition.x == -1)
+        while(pieceToMovePosition.x == -1 && depth > 2) //gets triggered when depth is larger than the number of moves left
+        {
+            depth -= 2;
+            minEvaluation = (int.MaxValue, rawBoard, (-1, -1), (-1, -1));
+            maxEvaluation = (int.MinValue, rawBoard, (-1, -1), (-1, -1));
+            minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta);
+
+            newMovePosition = new Vector2(minimaxResult.Item3.Item1, minimaxResult.Item3.Item2);
+            pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
+        }
+
+
+        //failsafe
+        if (pieceToMovePosition.x == -1)
             pieceToMovePosition = Game.Board.Pieces.FirstOrDefault(p => p.Color == Game.CurrentPlayer.PlayerColor && p.PossibleMoves.Count > 0).BoardPosition;
 
         if(newMovePosition.x == -1)
