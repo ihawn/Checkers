@@ -23,6 +23,8 @@ public static class Heuristics
                 return HeuristicWithKingsAndMoveCountsAndCenter(board);
             case 7:
                 return HeuristicWithCenter(board);
+            case 8:
+                return HeuristicByKingAndPosition(board);
             default:
                 return board.BlackPieceCount - board.WhitePieceCount;
         }
@@ -245,6 +247,43 @@ public static class Heuristics
                                 whiteVal++;
                             break;
                     }
+                }
+            }
+        }
+        return blackVal - whiteVal;
+    }
+
+    static int HeuristicByKingAndPosition(RawCheckersBoard board)
+    {
+        int blackVal = 0;
+        int whiteVal = 0;
+        for (int i = 0; i < GlobalProperties.SquaresPerBoardSide; i++)
+        {
+            for (int j = 0; j < GlobalProperties.SquaresPerBoardSide; j++)
+            {
+                int moveCount = board.GetMovesForPiece((i, j)).Count;
+                switch (board.BoardMatrix[i, j])
+                {
+                    case 1:
+                        blackVal += 5 + j;
+                        if (i > 1 && i < GlobalProperties.SquaresPerBoardSide - 1)
+                            blackVal += moveCount;
+                        break;
+                    case 2:
+                        whiteVal += 5 + j;
+                        if (i > 1 && i < GlobalProperties.SquaresPerBoardSide - 1)
+                            blackVal += moveCount;
+                        break;
+                    case 3:
+                        blackVal += 5 + j + GlobalProperties.KingWorth;
+                        if (i > 1 && i < GlobalProperties.SquaresPerBoardSide - 1)
+                            blackVal += moveCount;
+                        break;
+                    case 4:
+                        whiteVal += 5 + j + GlobalProperties.KingWorth;
+                        if (i > 1 && i < GlobalProperties.SquaresPerBoardSide - 1)
+                            blackVal += moveCount;
+                        break;
                 }
             }
         }

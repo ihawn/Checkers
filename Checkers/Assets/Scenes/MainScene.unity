@@ -178,9 +178,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Player1Type: 0
-  Player1HeuristicId: 4
+  Player1HeuristicId: 1
   Player2Type: 5
-  Player2HeuristicId: 1
+  Player2HeuristicId: 8
   UsePruning: 1
 --- !u!4 &625010163
 Transform:
