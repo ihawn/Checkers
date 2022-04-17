@@ -133,6 +133,7 @@ public class RawCheckersBoard
                 WhitePieceCount++;          
         }
     }
+
     public void MovePiece((int, int) coord1, (int, int) coord2)
     {
         //movement

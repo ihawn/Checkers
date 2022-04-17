@@ -9,11 +9,11 @@ public class CheckersGame
     public Player Player2 { get; set; }
     public Player CurrentPlayer { get; set; }
 
-    public CheckersGame(PlayerType player1Type, PlayerType player2Type, int player1HeuristicId, int player2HeuristicId)
+    public CheckersGame(PlayerType player1Type, PlayerType player2Type)
     {
         Board = new CheckersBoard(this);
-        Player1 = new Player(player1Type, player1HeuristicId, Color.black);
-        Player2 = new Player(player2Type, player2HeuristicId, Color.white);
+        Player1 = new Player(player1Type, Color.black);
+        Player2 = new Player(player2Type, Color.white);
         CurrentPlayer = Player1;
     }
 }

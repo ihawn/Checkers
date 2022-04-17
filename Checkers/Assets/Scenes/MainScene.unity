@@ -1615,7 +1615,7 @@ MonoBehaviour:
   crown: {fileID: 6576153495705084420, guid: 3ff44fd26e9b4a94aaa3e61b71521388, type: 3}
   kingWorth: 2
   kingGuardWorth: 2
-  endGameThreshold: 2
+  endGameThreshold: 3
   drawMoveThreshold: 10
   lerpSpeed: 20
   scaleSpeed: 15
@@ -1633,9 +1633,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Player1Type: 0
-  Player1HeuristicId: 2
   Player2Type: 3
-  Player2HeuristicId: 2
   UsePruning: 1
   CurrentPlayer: 
 --- !u!4 &625010163

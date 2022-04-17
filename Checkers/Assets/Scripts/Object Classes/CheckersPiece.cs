@@ -53,6 +53,7 @@ public class CheckersPiece
 
         CheckForKing();
     }
+
     void CheckForKing()
     {
         if(((BoardPosition.y == GlobalProperties.SquaresPerBoardSide - 1 && Color == Color.black) ||

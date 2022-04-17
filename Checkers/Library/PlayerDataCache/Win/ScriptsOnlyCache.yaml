@@ -82,55 +82,55 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 1452}
     - Class: 114
-      Script: {instanceID: 1560}
+      Script: {instanceID: 1564}
     - Class: 114
-      Script: {instanceID: 1634}
+      Script: {instanceID: 1638}
     - Class: 114
-      Script: {instanceID: 1768}
+      Script: {instanceID: 1772}
     - Class: 114
-      Script: {instanceID: 1894}
+      Script: {instanceID: 1898}
     - Class: 114
-      Script: {instanceID: 2118}
+      Script: {instanceID: 2122}
     - Class: 114
-      Script: {instanceID: 2250}
+      Script: {instanceID: 2254}
     - Class: 114
-      Script: {instanceID: 2352}
+      Script: {instanceID: 2356}
     - Class: 114
-      Script: {instanceID: 2510}
+      Script: {instanceID: 2514}
     - Class: 114
-      Script: {instanceID: 2636}
+      Script: {instanceID: 2640}
     - Class: 114
-      Script: {instanceID: 2696}
+      Script: {instanceID: 2700}
     - Class: 114
-      Script: {instanceID: 2714}
+      Script: {instanceID: 2718}
     - Class: 114
-      Script: {instanceID: 2734}
+      Script: {instanceID: 2738}
     - Class: 114
-      Script: {instanceID: 2836}
+      Script: {instanceID: 2840}
     - Class: 114
-      Script: {instanceID: 2892}
+      Script: {instanceID: 2896}
     - Class: 114
-      Script: {instanceID: 2982}
+      Script: {instanceID: 2986}
     - Class: 114
-      Script: {instanceID: 3050}
+      Script: {instanceID: 3054}
     - Class: 114
-      Script: {instanceID: 3062}
+      Script: {instanceID: 3066}
     - Class: 114
-      Script: {instanceID: 3110}
+      Script: {instanceID: 3114}
     - Class: 114
-      Script: {instanceID: 3146}
+      Script: {instanceID: 3150}
     - Class: 114
-      Script: {instanceID: 3196}
+      Script: {instanceID: 3200}
     - Class: 114
-      Script: {instanceID: 3286}
+      Script: {instanceID: 3290}
     - Class: 114
-      Script: {instanceID: 3314}
+      Script: {instanceID: 3318}
     - Class: 114
-      Script: {instanceID: 3542}
+      Script: {instanceID: 3546}
     - Class: 114
-      Script: {instanceID: 3664}
+      Script: {instanceID: 3668}
     - Class: 114
-      Script: {instanceID: 3816}
+      Script: {instanceID: 3820}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -638,7 +638,7 @@ ScriptsOnlyBuild:
     className: CustomInputField
   - hash:
       serializedVersion: 2
-      Hash: 6d087a80fec4c5800181a640d160b7ed
+      Hash: b7641715fe1080fa1e14613f69699407
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GlobalProperties
@@ -698,7 +698,7 @@ ScriptsOnlyBuild:
     className: SignalReceiver
   - hash:
       serializedVersion: 2
-      Hash: 73ad2ea541378f49a114726d1c7bc5d4
+      Hash: ad4e47cc1baf1972e5fc23a98397d0c5
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GameManager
@@ -1215,4 +1215,4 @@ ScriptsOnlyBuild:
   platform: 5
   scenePathNames:
   - Assets/Scenes/MainScene.unity
-  playerPath: C:/Users/Isaac/Documents/_games/Builds/Checkers/4-16-22_4/Checkers.exe
+  playerPath: C:/Users/Isaac/Documents/_games/Builds/Checkers/4-16-22_5/Checkers.exe

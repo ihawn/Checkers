@@ -6,6 +6,7 @@ using System;
 
 public class GameManager : MonoBehaviour
 {
+    #region Parameters
     public GlobalProperties GlobalProperties { get; private set; }
     public CheckersGame Game { get; private set; }
     public GameObject Highlighter { get; private set; }
@@ -16,21 +17,16 @@ public class GameManager : MonoBehaviour
     PlayerType Player1Type;
 
     [SerializeField]
-    int Player1HeuristicId;
-
-    [SerializeField]
     PlayerType Player2Type;
-
-    [SerializeField]
-    int Player2HeuristicId;
 
     [SerializeField]
     bool UsePruning;
 
     [SerializeField]
     string CurrentPlayer;
+    #endregion
 
-
+    #region Game Loop
     void Awake()
     {
         GlobalProperties = GetComponent<GlobalProperties>();
@@ -54,6 +50,10 @@ public class GameManager : MonoBehaviour
             Game.Board.BlackPiecesCount = blackPiecesCount;
             Game.Board.WhitePiecesCount = whitePiecesCount;
 
+            int heuristicId = 1;
+            if((blackPiecesCount < GlobalProperties.EndGameThreshold || whitePiecesCount < GlobalProperties.EndGameThreshold) && blackPiecesCount != whitePiecesCount)
+                heuristicId = 2;
+
             if (blackPiecesCount > 0 && whitePiecesCount > 0)
             {
                 switch (Game.CurrentPlayer.Type)
@@ -67,23 +67,23 @@ public class GameManager : MonoBehaviour
                         break;
 
                     case PlayerType.KindaDumbAI:
-                        GetSmartInput(1, Game.CurrentPlayer.HeuristicId);
+                        GetSmartInput(1, heuristicId);
                         break;
 
                     case PlayerType.SmartAI:
-                        GetSmartInput(3, Game.CurrentPlayer.HeuristicId);
+                        GetSmartInput(3, heuristicId);
                         break;
 
                     case PlayerType.ReallySmartAI:
-                        GetSmartInput(5, Game.CurrentPlayer.HeuristicId);
+                        GetSmartInput(5, heuristicId);
                         break;
 
                     case PlayerType.GeniusAI:
-                        GetSmartInput(7, Game.CurrentPlayer.HeuristicId);
+                        GetSmartInput(7, heuristicId);
                         break;
 
                     case PlayerType.Cthulu:
-                        GetSmartInput(9, Game.CurrentPlayer.HeuristicId);
+                        GetSmartInput(9, heuristicId);
                         break;
                 }
             }
@@ -133,18 +133,31 @@ public class GameManager : MonoBehaviour
             Player1Type = type;
         else if (player == "2")
             Player2Type = type;
-    }    
+    }
+    #endregion
 
+    #region Game Flow
     public void StartGame()
     {
         CanMove = true;
         foreach (Transform t in GlobalProperties.ContainerObject.transform)
             Destroy(t.gameObject);
-        Game = new CheckersGame(Player1Type, Player2Type, Player1HeuristicId, Player2HeuristicId);
+        Game = new CheckersGame(Player1Type, Player2Type);
         UIController.ShowGameOverlay(showGameStats: true);
         StartCoroutine(StartGameDelay());
     }
+    void SwitchPlayer()
+    {
+        Game.CurrentPlayer = Game.CurrentPlayer.PlayerColor == Color.black ? Game.Player2 : Game.Player1;
+    }
 
+    public void TogglePruning(string state)
+    {
+        UsePruning = state == "on" ? true : false;
+    }
+    #endregion
+
+    #region Input
     void GetHumanInput()
     {
         if(CanMove)
@@ -245,6 +258,95 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region Highlighter Control
+    List<CheckersSquare> ResetLastMoveHighlight()
+    {
+        List<CheckersSquare> darkSquares = Game.Board.Squares.Where(s => s.Color == GlobalProperties.DarkColor).ToList();
+        foreach (var square in darkSquares)
+            square.SquareGameObject.GetComponent<Renderer>().material.SetColor("_Color", GlobalProperties.DarkColor);
+        return darkSquares;
+    }
+
+    void HighlighterInit()
+    {
+        Highlighter = new GameObject("Highlighter", typeof(MeshRenderer), typeof(MeshFilter));
+        Highlighter.GetComponent<MeshFilter>().mesh = GlobalProperties.Cylinder;
+        Highlighter.GetComponent<Renderer>().material = GlobalProperties.HighlighterMaterial;
+        Highlighter.transform.localScale = Vector3.one * GlobalProperties.SquareLength * 0.9f;
+        Highlighter.transform.Rotate(90, 0, 0);
+        Highlighter.SetActive(false);
+    }
+
+    void HighlightPiece(CheckersPiece piece)
+    {
+        piece.PossibleMoves = Game.Board.CalculatePossibleMovesForPiece(piece);
+        Game.CurrentPlayer.SelectedPiece = piece;
+        Highlighter.SetActive(true);
+        Highlighter.transform.position = piece.PieceGameObject.transform.position + Vector3.forward * 4.5f;
+    }
+
+    void HighlightPossibleMoves(CheckersPiece piece)
+    {
+        List<CheckersSquare> darkSquares = ResetLastMoveHighlight();
+        List<GameObject> possibleMoveGameObjects = darkSquares.Where(s => piece.PossibleMoves.Contains(s.BoardPosition)).Select(x => x.SquareGameObject).ToList();
+
+        foreach (GameObject square in possibleMoveGameObjects)
+            square.GetComponent<Renderer>().material.SetColor("_Color", GlobalProperties.DarkerColor);
+    }
+    #endregion
+
+    #region Helpers
+    public GameObject MakeGameObjectForObject(Mesh mesh, string name, Vector2 absolutePosition, Vector3 positionOffset, Vector3 rotation, Color color, float startDelay, float scaleFactor = 1, float heightScaleFactor = 1)
+    {
+        GameObject g = new GameObject(name, typeof(ObjectLinker), typeof(MeshRenderer), typeof(MeshFilter), typeof(BoxCollider));
+        g.transform.position = absolutePosition;
+        g.transform.position += positionOffset;
+        g.transform.Rotate(rotation);
+        g.transform.localScale = Vector3.one * GlobalProperties.SquareLength * scaleFactor;
+        g.transform.localScale = new Vector3(g.transform.localScale.x, g.transform.localScale.y * heightScaleFactor, g.transform.localScale.z);
+        g.GetComponent<MeshFilter>().mesh = mesh;
+        g.GetComponent<Renderer>().material = GlobalProperties.DefaultMaterial;
+        g.GetComponent<Renderer>().material.SetColor("_Color", color);
+        g.transform.parent = GlobalProperties.ContainerObject.transform;
+
+        StartCoroutine(SpawnObjectSmoothly(g, startDelay));
+
+        return g;
+    }
+    public void Coronation(CheckersPiece piece)
+    {
+        GameObject crown = Instantiate(GlobalProperties.Crown);
+        crown.transform.position = piece.PieceGameObject.transform.position - new Vector3(0, 0, 0.6f); ;
+        crown.transform.parent = piece.PieceGameObject.transform;
+        StartCoroutine(SpawnObjectSmoothly(crown, 0));
+    }
+
+    public static void DestroyPiece(CheckersPiece piece, CheckersBoard board)
+    {
+        board.Squares.FirstOrDefault(s => s.BoardPosition == piece.BoardPosition).OccupyingPiece = null;
+        Destroy(piece.PieceGameObject);
+        board.Pieces.Remove(piece);
+    }
+    #endregion
+
+    #region Animation Coroutines
+    IEnumerator SpawnObjectSmoothly(GameObject g, float startDelay)
+    {
+        Vector3 originalScale = g.transform.localScale;
+        g.transform.localScale = Vector3.zero;
+
+        yield return new WaitForSeconds(startDelay);
+
+        while (Vector3.Distance(originalScale, g.transform.localScale) > 0.03f)
+        {
+            g.transform.localScale = Vector3.Lerp(g.transform.localScale, originalScale, Time.deltaTime * GlobalProperties.ScaleSpeed);
+            yield return null;
+        }
+        g.transform.localScale = originalScale;
+    }
+
     IEnumerator MovePieceSmoothly(CheckersPiece piece, Vector2 newBoardPosition)
     {
         CanMove = false;
@@ -259,9 +361,9 @@ public class GameManager : MonoBehaviour
 
         if (Mathf.Abs(boardOffset.x) > 1)
         {
-            while(Vector3.Distance(piece.PieceGameObject.transform.position, newPosition) > 0.03f)
+            while (Vector3.Distance(piece.PieceGameObject.transform.position, newPosition) > 0.03f)
             {
-                piece.PieceGameObject.transform.localPosition = Vector3.Slerp(piece.PieceGameObject.transform.localPosition - slerpCenter, newPosition - slerpCenter, Mathf.Min(Time.deltaTime, 1/30f) * GlobalProperties.LerpSpeed) + slerpCenter;
+                piece.PieceGameObject.transform.localPosition = Vector3.Slerp(piece.PieceGameObject.transform.localPosition - slerpCenter, newPosition - slerpCenter, Mathf.Min(Time.deltaTime, 1 / 30f) * GlobalProperties.LerpSpeed) + slerpCenter;
                 yield return null;
             }
         }
@@ -280,103 +382,11 @@ public class GameManager : MonoBehaviour
         CanMove = true;
     }
 
-    void SwitchPlayer()
-    {
-        Game.CurrentPlayer = Game.CurrentPlayer.PlayerColor == Color.black ? Game.Player2 : Game.Player1;
-    }
-
-    void HighlightPiece(CheckersPiece piece)
-    {
-        piece.PossibleMoves = Game.Board.CalculatePossibleMovesForPiece(piece);
-        Game.CurrentPlayer.SelectedPiece = piece;
-        Highlighter.SetActive(true);
-        Highlighter.transform.position = piece.PieceGameObject.transform.position + Vector3.forward*4.5f;
-    }
-
-    void HighlightPossibleMoves(CheckersPiece piece)
-    {
-        List<CheckersSquare> darkSquares = ResetLastMoveHighlight();
-        List<GameObject> possibleMoveGameObjects = darkSquares.Where(s => piece.PossibleMoves.Contains(s.BoardPosition)).Select(x => x.SquareGameObject).ToList();
-
-        foreach(GameObject square in possibleMoveGameObjects)
-            square.GetComponent<Renderer>().material.SetColor("_Color", GlobalProperties.DarkerColor);
-    }
-
-    List<CheckersSquare> ResetLastMoveHighlight()
-    {
-        List<CheckersSquare> darkSquares = Game.Board.Squares.Where(s => s.Color == GlobalProperties.DarkColor).ToList();
-        foreach (var square in darkSquares)
-            square.SquareGameObject.GetComponent<Renderer>().material.SetColor("_Color", GlobalProperties.DarkColor);
-        return darkSquares;
-    }
-
-    public void TogglePruning(string state)
-    {
-        UsePruning = state == "on" ? true : false;
-    }
-
-    void HighlighterInit()
-    {
-        Highlighter = new GameObject("Highlighter", typeof(MeshRenderer), typeof(MeshFilter));
-        Highlighter.GetComponent<MeshFilter>().mesh = GlobalProperties.Cylinder;
-        Highlighter.GetComponent<Renderer>().material = GlobalProperties.HighlighterMaterial;
-        Highlighter.transform.localScale = Vector3.one * GlobalProperties.SquareLength * 0.9f;
-        Highlighter.transform.Rotate(90, 0, 0);
-        Highlighter.SetActive(false);
-    }
-
-
-    public GameObject MakeGameObjectForObject(Mesh mesh, string name, Vector2 absolutePosition, Vector3 positionOffset, Vector3 rotation, Color color, float startDelay, float scaleFactor = 1, float heightScaleFactor = 1)
-    {
-        GameObject g = new GameObject(name, typeof(ObjectLinker), typeof(MeshRenderer), typeof(MeshFilter), typeof(BoxCollider));
-        g.transform.position = absolutePosition;
-        g.transform.position += positionOffset;
-        g.transform.Rotate(rotation);
-        g.transform.localScale = Vector3.one * GlobalProperties.SquareLength * scaleFactor;
-        g.transform.localScale = new Vector3(g.transform.localScale.x, g.transform.localScale.y * heightScaleFactor, g.transform.localScale.z);
-        g.GetComponent<MeshFilter>().mesh = mesh;
-        g.GetComponent<Renderer>().material = GlobalProperties.DefaultMaterial;
-        g.GetComponent<Renderer>().material.SetColor("_Color", color);
-        g.transform.parent = GlobalProperties.ContainerObject.transform;
-
-        StartCoroutine(SpawnObjectSmoothly(g, startDelay));
-
-        return g;
-    }
-    IEnumerator SpawnObjectSmoothly(GameObject g, float startDelay)
-    {
-        Vector3 originalScale = g.transform.localScale;
-        g.transform.localScale = Vector3.zero;
-
-        yield return new WaitForSeconds(startDelay);
-
-        while (Vector3.Distance(originalScale, g.transform.localScale) > 0.03f)
-        {
-            g.transform.localScale = Vector3.Lerp(g.transform.localScale, originalScale, Time.deltaTime * GlobalProperties.ScaleSpeed);
-            yield return null;
-        }
-        g.transform.localScale = originalScale;
-    }
-
     IEnumerator StartGameDelay()
     {
         UIController.InMenus = true;
         yield return new WaitForSeconds(2);
         UIController.InMenus = false;
     }
-
-    public static void DestroyPiece(CheckersPiece piece, CheckersBoard board)
-    {
-        board.Squares.FirstOrDefault(s => s.BoardPosition == piece.BoardPosition).OccupyingPiece = null;
-        Destroy(piece.PieceGameObject);
-        board.Pieces.Remove(piece);
-    }
-
-    public void Coronation(CheckersPiece piece)
-    {
-        GameObject crown = Instantiate(GlobalProperties.Crown);
-        crown.transform.position = piece.PieceGameObject.transform.position - new Vector3(0, 0, 0.6f); ;
-        crown.transform.parent = piece.PieceGameObject.transform;
-        StartCoroutine(SpawnObjectSmoothly(crown, 0));
-    }
+    #endregion
 }
