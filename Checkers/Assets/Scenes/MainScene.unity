@@ -1617,6 +1617,9 @@ MonoBehaviour:
   kingGuardWorth: 2
   endGameThreshold: 2
   drawMoveThreshold: 10
+  lerpSpeed: 20
+  scaleSpeed: 15
+  spawnDelayOffset: 0.015
 --- !u!114 &625010162
 MonoBehaviour:
   m_ObjectHideFlags: 0

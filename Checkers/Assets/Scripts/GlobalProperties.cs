@@ -18,6 +18,10 @@ public class GlobalProperties : MonoBehaviour
     public static int KingGuardWorth { get; private set; }
     public static int EndGameThreshold { get; private set; }
     public static int DrawMoveThreshold { get; private set; }
+    public static float LerpSpeed { get; private set; }
+    public static float ScaleSpeed { get; private set; }
+    public static float SpawnDelayOffset { get; private set; }
+    public static GameManager GameManager { get; private set; }
 
     [SerializeField]
     int squaresPerBoardSide = 8;
@@ -61,6 +65,15 @@ public class GlobalProperties : MonoBehaviour
     [SerializeField]
     int drawMoveThreshold;
 
+    [SerializeField]
+    float lerpSpeed;
+
+    [SerializeField]
+    float scaleSpeed;
+
+    [SerializeField]
+    float spawnDelayOffset;
+
     public void InitializeGlobalProperties()
     {
         SquaresPerBoardSide = squaresPerBoardSide;
@@ -77,5 +90,9 @@ public class GlobalProperties : MonoBehaviour
         KingGuardWorth = kingGuardWorth;
         EndGameThreshold = endGameThreshold;
         DrawMoveThreshold = drawMoveThreshold;
+        LerpSpeed = lerpSpeed;
+        ScaleSpeed = scaleSpeed;
+        SpawnDelayOffset = spawnDelayOffset;
+        GameManager = GetComponent<GameManager>();
     }
 }

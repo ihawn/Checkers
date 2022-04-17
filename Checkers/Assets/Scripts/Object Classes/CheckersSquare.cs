@@ -9,12 +9,12 @@ public class CheckersSquare
     public GameObject SquareGameObject { get; }
     public CheckersPiece OccupyingPiece { get; set; }
 
-    public CheckersSquare(Vector2 boardPosition, Vector2 absolutePosition, Color color)
+    public CheckersSquare(Vector2 boardPosition, Vector2 absolutePosition, Color color, float gameObjectSpawnDelay)
     {
         string name = "Square (" + boardPosition.x + ", " + boardPosition.y + ")";
 
         BoardPosition = boardPosition;
         Color = color;
-        SquareGameObject = GameManager.MakeGameObjectForObject(GlobalProperties.Cube, name, absolutePosition, Vector3.zero, Vector3.zero, color);
+        SquareGameObject = GlobalProperties.GameManager.MakeGameObjectForObject(GlobalProperties.Cube, name, absolutePosition, Vector3.zero, Vector3.zero, color, gameObjectSpawnDelay);
     }
 }

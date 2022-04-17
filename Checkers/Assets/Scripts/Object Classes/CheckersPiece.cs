@@ -15,7 +15,7 @@ public class CheckersPiece
     public CheckersSquare SquareOccupying { get; set; }
     public Queue<Vector2> PastMoves { get; private set; }
 
-    public CheckersPiece(int id, Vector2 boardPosition, Vector2 absolutePosition, Color color, CheckersBoard parentBoard)
+    public CheckersPiece(int id, Vector2 boardPosition, Vector2 absolutePosition, Color color, CheckersBoard parentBoard, float gameObjectSpawnDelay)
     {
         string name = "Piece (" + id + ")";
 
@@ -24,10 +24,10 @@ public class CheckersPiece
         Color = color;
         IsKing = false;
         ParentBoard = parentBoard;
-        PieceGameObject = GameManager.MakeGameObjectForObject(GlobalProperties.Cylinder, name, absolutePosition, -Vector3.forward * GlobalProperties.SquareLength * 0.6f, new Vector3(90, 0, 0), color, scaleFactor: 0.8f, heightScaleFactor: 0.1f);       
+        PieceGameObject = GlobalProperties.GameManager.MakeGameObjectForObject(GlobalProperties.Cylinder, name, absolutePosition, -Vector3.forward * GlobalProperties.SquareLength * 0.6f, new Vector3(90, 0, 0), color, gameObjectSpawnDelay, scaleFactor: 0.8f, heightScaleFactor: 0.1f);       
     }
 
-    public void MovePieceTo(Vector2 newBoardPosition, bool treeTraversalMove = false)
+    public void MovePieceTo(Vector2 newBoardPosition)
     {
         Vector2 boardOffset = newBoardPosition - BoardPosition;
         Vector2 movementOffset = boardOffset * GlobalProperties.SquareLength;
@@ -37,10 +37,7 @@ public class CheckersPiece
             pieceThatWasJumped = ParentBoard.Pieces.FirstOrDefault(p => p.BoardPosition == new Vector2(BoardPosition.x + boardOffset.x / 2, BoardPosition.y + boardOffset.y / 2));
 
         if (pieceThatWasJumped != null)
-            GameManager.DestroyPiece(pieceThatWasJumped, ParentBoard, treeTraversalMove);
-
-        if(!treeTraversalMove)
-            PieceGameObject.transform.position += new Vector3(movementOffset.x, movementOffset.y, 0);
+            GameManager.DestroyPiece(pieceThatWasJumped, ParentBoard);
         
         BoardPosition = newBoardPosition;
         PossibleMoves = ParentBoard.CalculatePossibleMovesForPiece(this);
@@ -56,15 +53,13 @@ public class CheckersPiece
 
         CheckForKing();
     }
-
-    void CheckForKing(bool treeTraversalMove = false)
+    void CheckForKing()
     {
-        if((BoardPosition.y == GlobalProperties.SquaresPerBoardSide - 1 && Color == Color.black) ||
-            (BoardPosition.y == 0 && Color == Color.white))
+        if(((BoardPosition.y == GlobalProperties.SquaresPerBoardSide - 1 && Color == Color.black) ||
+            (BoardPosition.y == 0 && Color == Color.white)) && !IsKing)
         {
             IsKing = true;
-            if(!treeTraversalMove)
-                GameManager.Coronation(this);
+            GlobalProperties.GameManager.Coronation(this);
         }
     }
 }

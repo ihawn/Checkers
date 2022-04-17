@@ -1215,4 +1215,4 @@ ScriptsOnlyBuild:
   platform: 5
   scenePathNames:
   - Assets/Scenes/MainScene.unity
-  playerPath: C:/Users/Isaac/Documents/_games/Builds/Checkers/4-16-22_3/Checkers.exe
+  playerPath: C:/Users/Isaac/Documents/_games/Builds/Checkers/4-16-22_4/Checkers.exe

@@ -10,6 +10,7 @@ public class GameManager : MonoBehaviour
     public CheckersGame Game { get; private set; }
     public GameObject Highlighter { get; private set; }
     public UIController UIController { get; private set; }
+    public bool CanMove { get; private set; }
 
     [SerializeField]
     PlayerType Player1Type;
@@ -136,38 +137,39 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
+        CanMove = true;
         foreach (Transform t in GlobalProperties.ContainerObject.transform)
             Destroy(t.gameObject);
         Game = new CheckersGame(Player1Type, Player2Type, Player1HeuristicId, Player2HeuristicId);
         UIController.ShowGameOverlay(showGameStats: true);
+        StartCoroutine(StartGameDelay());
     }
 
     void GetHumanInput()
     {
-        if(Input.GetMouseButtonDown(0))
+        if(CanMove)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, 100))
+            if (Input.GetMouseButtonDown(0))
             {
-                ObjectLinker linker = hit.transform.gameObject.GetComponent<ObjectLinker>();
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit hit;
 
-                if(linker.LinkedObject is CheckersPiece piece && piece.Color == Game.CurrentPlayer.PlayerColor)
+                if (Physics.Raycast(ray, out hit, 100))
                 {
-                    HighlightPiece(piece);
-                    HighlightPossibleMoves(piece);
-                }
-                else if(linker.LinkedObject is CheckersSquare square)
-                {
-                    CheckersPiece selectedPiece = Game.CurrentPlayer.SelectedPiece;
-                    if(selectedPiece != null && selectedPiece.PossibleMoves.Contains(square.BoardPosition))
+                    ObjectLinker linker = hit.transform.gameObject.GetComponent<ObjectLinker>();
+
+                    if (linker.LinkedObject is CheckersPiece piece && piece.Color == Game.CurrentPlayer.PlayerColor)
                     {
-                        selectedPiece.MovePieceTo(square.BoardPosition);
-                        Highlighter.SetActive(false);
-                        ResetLastMoveHighlight();
-
-                        SwitchPlayer();
+                        HighlightPiece(piece);
+                        HighlightPossibleMoves(piece);
+                    }
+                    else if (linker.LinkedObject is CheckersSquare square)
+                    {
+                        CheckersPiece selectedPiece = Game.CurrentPlayer.SelectedPiece;
+                        if (selectedPiece != null && selectedPiece.PossibleMoves.Contains(square.BoardPosition))
+                        {
+                            StartCoroutine(MovePieceSmoothly(selectedPiece, square.BoardPosition));
+                        }
                     }
                 }
             }
@@ -176,68 +178,106 @@ public class GameManager : MonoBehaviour
 
     void GetDumbInput()
     {
-        List<CheckersPiece> piecesOfOwnColor = Game.Board.Pieces.Where(p => p.Color == Game.CurrentPlayer.PlayerColor).ToList();
-        foreach(CheckersPiece piece in piecesOfOwnColor)
+        if(CanMove)
         {
-            Game.Board.Pieces.FirstOrDefault(p => p.BoardPosition == piece.BoardPosition).PossibleMoves = Game.Board.CalculatePossibleMovesForPiece(piece);
-        }
+            List<CheckersPiece> piecesOfOwnColor = Game.Board.Pieces.Where(p => p.Color == Game.CurrentPlayer.PlayerColor).ToList();
+            foreach (CheckersPiece piece in piecesOfOwnColor)
+            {
+                Game.Board.Pieces.FirstOrDefault(p => p.BoardPosition == piece.BoardPosition).PossibleMoves = Game.Board.CalculatePossibleMovesForPiece(piece);
+            }
 
-        List<CheckersPiece> piecesWithMoves = Game.Board.Pieces.Where(p => p.PossibleMoves.Count > 0 && p.Color == Game.CurrentPlayer.PlayerColor).ToList();
-        CheckersPiece selectedPiece = piecesWithMoves[UnityEngine.Random.Range(0, piecesWithMoves.Count)];
-        Vector2 chosenMove = selectedPiece.PossibleMoves[UnityEngine.Random.Range(0, selectedPiece.PossibleMoves.Count)];
-        selectedPiece.MovePieceTo(chosenMove);
-        SwitchPlayer();
+            List<CheckersPiece> piecesWithMoves = Game.Board.Pieces.Where(p => p.PossibleMoves.Count > 0 && p.Color == Game.CurrentPlayer.PlayerColor).ToList();
+            CheckersPiece selectedPiece = piecesWithMoves[UnityEngine.Random.Range(0, piecesWithMoves.Count)];
+            Vector2 chosenMove = selectedPiece.PossibleMoves[UnityEngine.Random.Range(0, selectedPiece.PossibleMoves.Count)];
+            StartCoroutine(MovePieceSmoothly(selectedPiece, chosenMove));
+        }
     }
 
     void GetSmartInput(int depth, int heuristicId)
     {
-        var watch = System.Diagnostics.Stopwatch.StartNew();
-
-        int alpha = int.MinValue;
-        int beta = int.MaxValue;
-
-        RawCheckersBoard rawBoard = new RawCheckersBoard(Game.Board);
-
-        //eval, board, move, piece
-        (int, RawCheckersBoard, (int, int), (int, int)) minEvaluation = (int.MaxValue, rawBoard, (-1, -1), (-1, -1));
-        (int, RawCheckersBoard, (int, int), (int, int)) maxEvaluation = (int.MinValue, rawBoard, (-1, -1), (-1, -1));
-        (int, RawCheckersBoard, (int, int), (int, int), int) minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId, 0);
-        
-        Vector2 newMovePosition = new Vector2(minimaxResult.Item3.Item1, minimaxResult.Item3.Item2);
-        Vector2 pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
-        
-        while(pieceToMovePosition.x == -1 && depth > 2) //gets triggered when depth is larger than the number of moves left
+        if(CanMove)
         {
-            depth -= 2;
-            minEvaluation = (int.MaxValue, rawBoard, (-1, -1), (-1, -1));
-            maxEvaluation = (int.MinValue, rawBoard, (-1, -1), (-1, -1));
-            minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId, 0);
+            var watch = System.Diagnostics.Stopwatch.StartNew();
 
-            newMovePosition = new Vector2(minimaxResult.Item3.Item1, minimaxResult.Item3.Item2);
-            pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
+            int alpha = int.MinValue;
+            int beta = int.MaxValue;
+
+            RawCheckersBoard rawBoard = new RawCheckersBoard(Game.Board);
+
+            //eval, board, move, piece
+            (int, RawCheckersBoard, (int, int), (int, int)) minEvaluation = (int.MaxValue, rawBoard, (-1, -1), (-1, -1));
+            (int, RawCheckersBoard, (int, int), (int, int)) maxEvaluation = (int.MinValue, rawBoard, (-1, -1), (-1, -1));
+            (int, RawCheckersBoard, (int, int), (int, int), int) minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId, 0);
+
+            Vector2 newMovePosition = new Vector2(minimaxResult.Item3.Item1, minimaxResult.Item3.Item2);
+            Vector2 pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
+
+            while (pieceToMovePosition.x == -1 && depth > 2) //gets triggered when depth is larger than the number of moves left
+            {
+                depth -= 2;
+                minEvaluation = (int.MaxValue, rawBoard, (-1, -1), (-1, -1));
+                maxEvaluation = (int.MinValue, rawBoard, (-1, -1), (-1, -1));
+                minimaxResult = TreeOptimizer.Minimax((rawBoard, (-1, -1), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, (0, 0), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId, 0);
+
+                newMovePosition = new Vector2(minimaxResult.Item3.Item1, minimaxResult.Item3.Item2);
+                pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
+            }
+
+            //failsafe
+            if (pieceToMovePosition.x == -1)
+                pieceToMovePosition = Game.Board.Pieces.FirstOrDefault(p => p.Color == Game.CurrentPlayer.PlayerColor && p.PossibleMoves.Count > 0).BoardPosition;
+
+            if (newMovePosition.x == -1)
+            {
+                CheckersPiece newPiece = Game.Board.Pieces.FirstOrDefault(p => p.BoardPosition == pieceToMovePosition);
+                if (newPiece.PossibleMoves.Count > 0)
+                    newMovePosition = newPiece.PossibleMoves[0];
+                else
+                    newMovePosition = Game.Board.Pieces.FirstOrDefault(p => p.Color == Game.CurrentPlayer.PlayerColor && p.PossibleMoves.Count > 0).PossibleMoves[0];
+            }
+            watch.Stop();
+
+            CheckersPiece pieceToMove = Game.Board.Pieces.FirstOrDefault(p => p.BoardPosition == pieceToMovePosition);
+            StartCoroutine(MovePieceSmoothly(pieceToMove, newMovePosition));
+
+            Debug.Log("Moved (" + pieceToMovePosition.x + ", " + pieceToMovePosition.y + ") to (" + newMovePosition.x + ", " + newMovePosition.y + ")");
+            UIController.PrintGameStats(watch.ElapsedMilliseconds / 1000f, minimaxResult.Item5, minimaxResult.Item1);
         }
+    }
 
-        //failsafe
-        if (pieceToMovePosition.x == -1)
-            pieceToMovePosition = Game.Board.Pieces.FirstOrDefault(p => p.Color == Game.CurrentPlayer.PlayerColor && p.PossibleMoves.Count > 0).BoardPosition;
+    IEnumerator MovePieceSmoothly(CheckersPiece piece, Vector2 newBoardPosition)
+    {
+        CanMove = false;
 
-        if(newMovePosition.x == -1)
+        Highlighter.SetActive(false);
+        ResetLastMoveHighlight();
+
+        Vector2 boardOffset = newBoardPosition - piece.BoardPosition;
+        Vector2 movementOffset = boardOffset * GlobalProperties.SquareLength;
+        Vector3 newPosition = piece.PieceGameObject.transform.position + new Vector3(movementOffset.x, movementOffset.y, 0f);
+        Vector3 slerpCenter = (piece.PieceGameObject.transform.localPosition + newPosition) / 2;
+
+        if (Mathf.Abs(boardOffset.x) > 1)
         {
-            CheckersPiece newPiece = Game.Board.Pieces.FirstOrDefault(p => p.BoardPosition == pieceToMovePosition);
-            if(newPiece.PossibleMoves.Count > 0)
-                newMovePosition = newPiece.PossibleMoves[0];
-            else
-                newMovePosition = Game.Board.Pieces.FirstOrDefault(p => p.Color == Game.CurrentPlayer.PlayerColor && p.PossibleMoves.Count > 0).PossibleMoves[0];
+            while(Vector3.Distance(piece.PieceGameObject.transform.position, newPosition) > 0.03f)
+            {
+                piece.PieceGameObject.transform.localPosition = Vector3.Slerp(piece.PieceGameObject.transform.localPosition - slerpCenter, newPosition - slerpCenter, Mathf.Min(Time.deltaTime, 1/30f) * GlobalProperties.LerpSpeed) + slerpCenter;
+                yield return null;
+            }
         }
-        watch.Stop();
+        else
+        {
+            while (Vector3.Distance(piece.PieceGameObject.transform.position, newPosition) > 0.03f)
+            {
+                piece.PieceGameObject.transform.localPosition = Vector3.Lerp(piece.PieceGameObject.transform.localPosition, newPosition, Mathf.Min(Time.deltaTime, 1 / 30f) * GlobalProperties.LerpSpeed);
+                yield return null;
+            }
+        }
+        piece.PieceGameObject.transform.localPosition = newPosition;
 
-        CheckersPiece pieceToMove = Game.Board.Pieces.FirstOrDefault(p => p.BoardPosition == pieceToMovePosition);
-        pieceToMove.MovePieceTo(newMovePosition);
-
-        Debug.Log("Moved (" + pieceToMovePosition.x + ", " + pieceToMovePosition.y + ") to (" + newMovePosition.x + ", " + newMovePosition.y + ")");
-        UIController.PrintGameStats(watch.ElapsedMilliseconds/1000f, minimaxResult.Item5, minimaxResult.Item1);
-
+        piece.MovePieceTo(newBoardPosition);
         SwitchPlayer();
+        CanMove = true;
     }
 
     void SwitchPlayer()
@@ -285,7 +325,8 @@ public class GameManager : MonoBehaviour
         Highlighter.SetActive(false);
     }
 
-    public static GameObject MakeGameObjectForObject(Mesh mesh, string name, Vector2 absolutePosition, Vector3 positionOffset, Vector3 rotation, Color color, float scaleFactor = 1, float heightScaleFactor = 1)
+
+    public GameObject MakeGameObjectForObject(Mesh mesh, string name, Vector2 absolutePosition, Vector3 positionOffset, Vector3 rotation, Color color, float startDelay, float scaleFactor = 1, float heightScaleFactor = 1)
     {
         GameObject g = new GameObject(name, typeof(ObjectLinker), typeof(MeshRenderer), typeof(MeshFilter), typeof(BoxCollider));
         g.transform.position = absolutePosition;
@@ -298,21 +339,44 @@ public class GameManager : MonoBehaviour
         g.GetComponent<Renderer>().material.SetColor("_Color", color);
         g.transform.parent = GlobalProperties.ContainerObject.transform;
 
+        StartCoroutine(SpawnObjectSmoothly(g, startDelay));
+
         return g;
     }
+    IEnumerator SpawnObjectSmoothly(GameObject g, float startDelay)
+    {
+        Vector3 originalScale = g.transform.localScale;
+        g.transform.localScale = Vector3.zero;
 
-    public static void DestroyPiece(CheckersPiece piece, CheckersBoard board, bool treeTraversalMove)
+        yield return new WaitForSeconds(startDelay);
+
+        while (Vector3.Distance(originalScale, g.transform.localScale) > 0.03f)
+        {
+            g.transform.localScale = Vector3.Lerp(g.transform.localScale, originalScale, Time.deltaTime * GlobalProperties.ScaleSpeed);
+            yield return null;
+        }
+        g.transform.localScale = originalScale;
+    }
+
+    IEnumerator StartGameDelay()
+    {
+        UIController.InMenus = true;
+        yield return new WaitForSeconds(2);
+        UIController.InMenus = false;
+    }
+
+    public static void DestroyPiece(CheckersPiece piece, CheckersBoard board)
     {
         board.Squares.FirstOrDefault(s => s.BoardPosition == piece.BoardPosition).OccupyingPiece = null;
-        if(!treeTraversalMove)
-            Destroy(piece.PieceGameObject);
+        Destroy(piece.PieceGameObject);
         board.Pieces.Remove(piece);
     }
 
-    public static void Coronation(CheckersPiece piece)
+    public void Coronation(CheckersPiece piece)
     {
         GameObject crown = Instantiate(GlobalProperties.Crown);
         crown.transform.position = piece.PieceGameObject.transform.position - new Vector3(0, 0, 0.6f); ;
         crown.transform.parent = piece.PieceGameObject.transform;
+        StartCoroutine(SpawnObjectSmoothly(crown, 0));
     }
 }

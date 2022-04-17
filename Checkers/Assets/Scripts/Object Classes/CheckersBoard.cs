@@ -28,15 +28,15 @@ public class CheckersBoard
                 Vector2 absolutePosition = boardPosition * GlobalProperties.SquareLength;
                 Color squareColor = i % 2 == j % 2 ? GlobalProperties.DarkColor : Color.white;
               
-                CheckersSquare square = new CheckersSquare(boardPosition, absolutePosition, squareColor);
+                CheckersSquare square = new CheckersSquare(boardPosition, absolutePosition, squareColor, (i*j + i)*GlobalProperties.SpawnDelayOffset);
                 CheckersPiece piece = null;
 
                 if ((j <= 2 && squareColor == GlobalProperties.DarkColor) || (j >= GlobalProperties.SquaresPerBoardSide - 3 && squareColor == GlobalProperties.DarkColor))
                 {
                     if (j <= 2 && squareColor == GlobalProperties.DarkColor)
-                        piece = new CheckersPiece(id, boardPosition, absolutePosition, Color.black, this);
+                        piece = new CheckersPiece(id, boardPosition, absolutePosition, Color.black, this, (i * j + i) * GlobalProperties.SpawnDelayOffset);
                     else
-                        piece = new CheckersPiece(id, boardPosition, absolutePosition, Color.white, this);
+                        piece = new CheckersPiece(id, boardPosition, absolutePosition, Color.white, this, (i * j + i) * GlobalProperties.SpawnDelayOffset);
 
                     piece.PieceGameObject.GetComponent<ObjectLinker>().LinkedObject = piece;
                     piece.SquareOccupying = square;
