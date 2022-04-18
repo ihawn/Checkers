@@ -36,7 +36,7 @@ public class TreeOptimizer
                 if(usePruning)
                 {
                     alpha = Math.Max(alpha, eval.Item1);
-                    if (beta <= alpha)
+                    if (beta <= alpha) //move was too good and the opponent will avoid this position
                         break;
                 }
             }
@@ -61,7 +61,7 @@ public class TreeOptimizer
                 if(usePruning)
                 {
                     beta = Math.Min(beta, eval.Item1);
-                    if (beta <= alpha)
+                    if (beta <= alpha) //move was too good and the opponent will avoid this position
                         break;
                 }
             }
