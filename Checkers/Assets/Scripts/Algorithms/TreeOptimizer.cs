@@ -85,7 +85,7 @@ public class TreeOptimizer
                     List<(int, int)> moves = baseBoard.GetMovesForPiece((i, j));
                     foreach((int, int) move in moves)
                     {
-                        RawCheckersBoard branchBoard = ObjectExtensions.Copy(baseBoard);
+                        RawCheckersBoard branchBoard = new RawCheckersBoard(baseBoard);
                         branchBoard.MovePiece((i, j), move);
                         boardListWithGeneratingMove.Add((branchBoard, move, (i, j)));
                         moveCount++;
@@ -131,6 +131,22 @@ public class RawCheckersBoard
                 BlackPieceCount++;
             else
                 WhitePieceCount++;          
+        }
+    }
+
+    public RawCheckersBoard(RawCheckersBoard oldBoard)
+    {
+        BlackPieceCount = oldBoard.BlackPieceCount;
+        WhitePieceCount = oldBoard.WhitePieceCount;
+
+        BoardMatrix = new int[GlobalProperties.SquaresPerBoardSide, GlobalProperties.SquaresPerBoardSide];
+
+        for (int i = 0; i < GlobalProperties.SquaresPerBoardSide; i++)
+        {
+            for (int j = i % 2 == 0 ? 0 : 1; j < GlobalProperties.SquaresPerBoardSide; j += 2)
+            {
+                BoardMatrix[i, j] = oldBoard.BoardMatrix[i, j];
+            }
         }
     }
 
@@ -199,18 +215,18 @@ public class RawCheckersBoard
             int newMoveY = piece.Item2 + yOffset[i];
             if (newMoveX >= 0 && newMoveX < GlobalProperties.SquaresPerBoardSide && newMoveY >= 0 && newMoveY < GlobalProperties.SquaresPerBoardSide) //new move is on board
             {
-                if(BoardMatrix[newMoveX, newMoveY] == 0) //new space is unoccupied
-                {
-                    moves.Add((newMoveX, newMoveY));
-                }
-                else if(otherPiece.Contains(BoardMatrix[newMoveX, newMoveY])) //if new space is occupied by other piece, check for jump
+                if(otherPiece.Contains(BoardMatrix[newMoveX, newMoveY])) //if new space is occupied by other piece, check for jump
                 {
                     int jumpMoveX = newMoveX + xOffset[i];
                     int jumpMoveY = newMoveY + yOffset[i];
                     if (jumpMoveX >= 0 && jumpMoveX < GlobalProperties.SquaresPerBoardSide && jumpMoveY >= 0 && jumpMoveY < GlobalProperties.SquaresPerBoardSide && BoardMatrix[jumpMoveX, jumpMoveY] == 0) //new move is on board and empty
                     {
                         moves.Add((jumpMoveX, jumpMoveY));
-                    }    
+                    }
+                }
+                else if (BoardMatrix[newMoveX, newMoveY] == 0) //new space is unoccupied
+                {
+                    moves.Add((newMoveX, newMoveY));
                 }
             }
         }

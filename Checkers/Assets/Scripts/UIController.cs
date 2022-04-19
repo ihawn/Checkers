@@ -13,7 +13,7 @@ public class UIController : MonoBehaviour
     public GameObject GameOverlay;
     public GameObject GameStatsWindow;
     public TextMeshProUGUI GameStatsWindowText;
-    public SwitchManager PruningSwitch;
+    public CustomToggle PruningSwitch;
     public bool InMenus;
 
     public void ShowMenuScreen()

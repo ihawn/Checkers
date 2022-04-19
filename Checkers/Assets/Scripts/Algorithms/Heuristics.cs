@@ -14,7 +14,7 @@ public static class Heuristics
             case 2:
                 return BoardScore(board);
             case 3:
-                return PieceDistance(board);
+                return PieceDistance(board)/2 + BoardScore(board);
             default:
                 return board.BlackPieceCount - board.WhitePieceCount;
         }
@@ -26,9 +26,9 @@ public static class Heuristics
         int score = 0;
         for (int i = 0; i < GlobalProperties.SquaresPerBoardSide; i++)
         {
-            for (int j = 0; j < GlobalProperties.SquaresPerBoardSide; j++)
+            for (int j = i % 2 == 0 ? 0 : 1; j < GlobalProperties.SquaresPerBoardSide; j+=2)
             {
-                if(board.BoardMatrix[i, j] != 0)
+                if (board.BoardMatrix[i, j] != 0)
                 {
                     if (board.BoardMatrix[i, j] == 3)
                         score += 10;

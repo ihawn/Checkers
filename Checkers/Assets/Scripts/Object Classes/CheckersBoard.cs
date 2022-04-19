@@ -55,6 +55,9 @@ public class CheckersBoard
         {
             Pieces[i].PossibleMoves = CalculatePossibleMovesForPiece(Pieces[i]);
         }
+
+        BlackPiecesCount = 12;
+        WhitePiecesCount = 12;
     }
 
     public List<Vector2> CalculatePossibleMovesForPiece(CheckersPiece piece)

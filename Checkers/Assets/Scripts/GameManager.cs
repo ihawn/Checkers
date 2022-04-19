@@ -24,6 +24,12 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     string CurrentPlayer;
+
+    [SerializeField]
+    int BlackPieceCount;
+
+    [SerializeField]
+    int WhitePieceCount;
     #endregion
 
     #region Game Loop
@@ -43,18 +49,19 @@ public class GameManager : MonoBehaviour
     {
         if(!UIController.InMenus)
         {
+            Game.Board.BlackPiecesCount = Game.Board.Pieces.Where(p => p.Color == Color.black && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
+            Game.Board.WhitePiecesCount = Game.Board.Pieces.Where(p => p.Color == Color.white && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
+
+            BlackPieceCount = Game.Board.BlackPiecesCount;
+            WhitePieceCount = Game.Board.WhitePiecesCount;
+
             CurrentPlayer = Game.CurrentPlayer.PlayerColor == Color.black ? "black" : "white";
 
-            int blackPiecesCount = Game.Board.Pieces.Where(p => p.Color == Color.black && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
-            int whitePiecesCount = Game.Board.Pieces.Where(p => p.Color == Color.white && Game.Board.CalculatePossibleMovesForPiece(p).Count() > 0).Count();
-            Game.Board.BlackPiecesCount = blackPiecesCount;
-            Game.Board.WhitePiecesCount = whitePiecesCount;
+            int heuristicId = 2;
+            if((Game.Board.BlackPiecesCount < GlobalProperties.EndGameThreshold || Game.Board.WhitePiecesCount < GlobalProperties.EndGameThreshold) && Game.Board.BlackPiecesCount != Game.Board.WhitePiecesCount)
+                heuristicId = 3;
 
-            int heuristicId = 1;
-            if((blackPiecesCount < GlobalProperties.EndGameThreshold || whitePiecesCount < GlobalProperties.EndGameThreshold) && blackPiecesCount != whitePiecesCount)
-                heuristicId = 2;
-
-            if (blackPiecesCount > 0 && whitePiecesCount > 0)
+            if (Game.Board.BlackPiecesCount > 0 && Game.Board.WhitePiecesCount > 0)
             {
                 switch (Game.CurrentPlayer.Type)
                 {
@@ -89,7 +96,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                UIController.ShowGameOverScreen(whitePiecesCount == 0 ? "black" : "white");
+                UIController.ShowGameOverScreen(Game.Board.WhitePiecesCount == 0 ? "black" : "white");
             }
         }
     }
@@ -143,7 +150,6 @@ public class GameManager : MonoBehaviour
         foreach (Transform t in GlobalProperties.ContainerObject.transform)
             Destroy(t.gameObject);
         Game = new CheckersGame(Player1Type, Player2Type);
-        UIController.ShowGameOverlay(showGameStats: true);
         StartCoroutine(StartGameDelay());
     }
     void SwitchPlayer()
@@ -151,9 +157,9 @@ public class GameManager : MonoBehaviour
         Game.CurrentPlayer = Game.CurrentPlayer.PlayerColor == Color.black ? Game.Player2 : Game.Player1;
     }
 
-    public void TogglePruning(string state)
+    public void TogglePruning()
     {
-        UsePruning = state == "on" ? true : false;
+        UsePruning = UsePruning ? false : true;
     }
     #endregion
 
@@ -385,8 +391,10 @@ public class GameManager : MonoBehaviour
     IEnumerator StartGameDelay()
     {
         UIController.InMenus = true;
+        UIController.MenuScreen.SetActive(false);
         yield return new WaitForSeconds(2);
         UIController.InMenus = false;
+        UIController.ShowGameOverlay(showGameStats: true);
     }
     #endregion
 }
