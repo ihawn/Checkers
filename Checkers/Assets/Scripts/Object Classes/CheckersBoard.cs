@@ -55,9 +55,6 @@ public class CheckersBoard
         {
             Pieces[i].PossibleMoves = CalculatePossibleMovesForPiece(Pieces[i]);
         }
-
-        BlackPiecesCount = 12;
-        WhitePiecesCount = 12;
     }
 
     public List<Vector2> CalculatePossibleMovesForPiece(CheckersPiece piece)
@@ -74,17 +71,8 @@ public class CheckersBoard
                    .ToList();
 
         //possible jump moves
-        List<Vector2> jumpMoves =
-            Squares.Where(s => s.OccupyingPiece == null &&
-                               s.Color == GlobalProperties.DarkColor &&
-                               Vector3.Magnitude(s.BoardPosition - piece.BoardPosition) < 2.83f && //distance is sqrt(8)
-                               Vector3.Magnitude(s.BoardPosition - piece.BoardPosition) > 2.82f &&
-                               s.BoardPosition != piece.BoardPosition &&
-                               Squares.FirstOrDefault(x => x.BoardPosition == new Vector2((s.BoardPosition.x + piece.BoardPosition.x) / 2, (s.BoardPosition.y + piece.BoardPosition.y) / 2)).OccupyingPiece != null && //there is a piece between and it is of the other color
-                               Squares.FirstOrDefault(x => x.BoardPosition == new Vector2((s.BoardPosition.x + piece.BoardPosition.x) / 2, (s.BoardPosition.y + piece.BoardPosition.y) / 2)).OccupyingPiece.Color == otherColor)
-                   .Select(x => x.BoardPosition)
-                   .ToList();
-
+        List<Vector2> jumpMoves = CaclulateJumpMovesForPiece(piece);
+            
         possibleMoves = possibleMoves.Concat(jumpMoves).ToList();
 
         if (!piece.IsKing)
@@ -96,5 +84,19 @@ public class CheckersBoard
         }
 
         return possibleMoves;
+    }
+
+    public List<Vector2> CaclulateJumpMovesForPiece(CheckersPiece piece)
+    {
+        Color otherColor = piece.Color == Color.white ? Color.black : Color.white;
+        return Squares.Where(s => s.OccupyingPiece == null &&
+                               s.Color == GlobalProperties.DarkColor &&
+                               Vector3.Magnitude(s.BoardPosition - piece.BoardPosition) < 2.83f && //distance is sqrt(8)
+                               Vector3.Magnitude(s.BoardPosition - piece.BoardPosition) > 2.82f &&
+                               s.BoardPosition != piece.BoardPosition &&
+                               Squares.FirstOrDefault(x => x.BoardPosition == new Vector2((s.BoardPosition.x + piece.BoardPosition.x) / 2, (s.BoardPosition.y + piece.BoardPosition.y) / 2)).OccupyingPiece != null && //there is a piece between and it is of the other color
+                               Squares.FirstOrDefault(x => x.BoardPosition == new Vector2((s.BoardPosition.x + piece.BoardPosition.x) / 2, (s.BoardPosition.y + piece.BoardPosition.y) / 2)).OccupyingPiece.Color == otherColor)
+                   .Select(x => x.BoardPosition)
+                   .ToList();
     }
 }
