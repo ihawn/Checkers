@@ -53,16 +53,18 @@ public class CheckersPiece
 
         CheckForKing();
 
-        //check for multiple jumps
+        //check for multiple jumps (human only. AI double jumping is handled in TreeOptimizer)
         List<Vector2> jumpMoves = ParentBoard.CaclulateJumpMovesForPiece(this);
         if (jumpMoves.Count > 0 && Mathf.Abs(boardOffset.x) > 1 && ParentBoard.Game.CurrentPlayer.Type == PlayerType.Human)
         {
             ParentBoard.DoubleJumpState = true;
+            ParentBoard.JumpingPiece = this;
             GlobalProperties.GameManager.HighlightPiece(this);
         }
         else
         {
             ParentBoard.DoubleJumpState = false;
+            ParentBoard.JumpingPiece = null;
             GlobalProperties.GameManager.SwitchPlayer();
         }
     }

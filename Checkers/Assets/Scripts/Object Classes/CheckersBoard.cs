@@ -12,6 +12,7 @@ public class CheckersBoard
     public int WhitePiecesCount { get; set; }
     public int AIMovesExplored { get; set; }
     public bool DoubleJumpState { get; set; }
+    public CheckersPiece JumpingPiece { get; set; }
 
     public CheckersBoard(CheckersGame game)
     {
