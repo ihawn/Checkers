@@ -152,7 +152,8 @@ public class GameManager : MonoBehaviour
         Game = new CheckersGame(Player1Type, Player2Type);
         StartCoroutine(StartGameDelay());
     }
-    void SwitchPlayer()
+
+    public void SwitchPlayer()
     {
         Game.CurrentPlayer = Game.CurrentPlayer.PlayerColor == Color.black ? Game.Player2 : Game.Player1;
     }
@@ -180,7 +181,6 @@ public class GameManager : MonoBehaviour
                     if (linker.LinkedObject is CheckersPiece piece && piece.Color == Game.CurrentPlayer.PlayerColor)
                     {
                         HighlightPiece(piece);
-                        HighlightPossibleMoves(piece);
                     }
                     else if (linker.LinkedObject is CheckersSquare square)
                     {
@@ -285,12 +285,13 @@ public class GameManager : MonoBehaviour
         Highlighter.SetActive(false);
     }
 
-    void HighlightPiece(CheckersPiece piece)
+    public void HighlightPiece(CheckersPiece piece)
     {
-        piece.PossibleMoves = Game.Board.CalculatePossibleMovesForPiece(piece);
+        piece.PossibleMoves = !Game.Board.DoubleJumpState ? Game.Board.CalculatePossibleMovesForPiece(piece) : Game.Board.CaclulateJumpMovesForPiece(piece);
         Game.CurrentPlayer.SelectedPiece = piece;
         Highlighter.SetActive(true);
         Highlighter.transform.position = piece.PieceGameObject.transform.position + Vector3.forward * 4.5f;
+        HighlightPossibleMoves(piece);
     }
 
     void HighlightPossibleMoves(CheckersPiece piece)
@@ -384,7 +385,6 @@ public class GameManager : MonoBehaviour
         piece.PieceGameObject.transform.localPosition = newPosition;
 
         piece.MovePieceTo(newBoardPosition);
-        SwitchPlayer();
         CanMove = true;
     }
 

@@ -11,6 +11,7 @@ public class CheckersBoard
     public int BlackPiecesCount { get; set; }
     public int WhitePiecesCount { get; set; }
     public int AIMovesExplored { get; set; }
+    public bool DoubleJumpState { get; set; }
 
     public CheckersBoard(CheckersGame game)
     {
@@ -18,6 +19,7 @@ public class CheckersBoard
         Pieces = new List<CheckersPiece>();
         Squares = new List<CheckersSquare>();
         AIMovesExplored = 0;
+        DoubleJumpState = false;
         int id = 0;
 
         for(int i = 0; i < GlobalProperties.SquaresPerBoardSide; i++)

@@ -52,6 +52,19 @@ public class CheckersPiece
         ParentBoard.BlackPiecesCount = ParentBoard.Pieces.Where(p => p.Color == Color.black).Count();
 
         CheckForKing();
+
+        //check for multiple jumps
+        List<Vector2> jumpMoves = ParentBoard.CaclulateJumpMovesForPiece(this);
+        if (jumpMoves.Count > 0 && Mathf.Abs(boardOffset.x) > 1 && ParentBoard.Game.CurrentPlayer.Type == PlayerType.Human)
+        {
+            ParentBoard.DoubleJumpState = true;
+            GlobalProperties.GameManager.HighlightPiece(this);
+        }
+        else
+        {
+            ParentBoard.DoubleJumpState = false;
+            GlobalProperties.GameManager.SwitchPlayer();
+        }
     }
 
     void CheckForKing()
