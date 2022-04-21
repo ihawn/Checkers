@@ -4,6 +4,8 @@ using UnityEngine;
 using System.Linq;
 using System;
 
+//GlobalProperties.SquaresPerBoardSide replaced with 8 for speed
+
 public class TreeOptimizer
 {
     //returns: position evaluation, raw board, move, piece, moves count
@@ -75,11 +77,11 @@ public class TreeOptimizer
         List<(RawCheckersBoard, List<(int, int)>, (int, int))> boardListWithGeneratingMove = new List<(RawCheckersBoard, List<(int, int)>, (int, int))>();
         List<(int, int, List<(int, int)>)> currentPlayerPiecesAndMoves = new List<(int, int, List<(int, int)>)>(); //contains the coordinates of the piece and a list of its possible moves
 
-        for (int i = 0; i < GlobalProperties.SquaresPerBoardSide; i++)
+        for (int i = 0; i < 8; i++)
         {
-            for(int j = 0; j < GlobalProperties.SquaresPerBoardSide; j++)
+            for(int j = i % 2 == 0 ? 0 : 1; j < 8; j++)
             {
-                if(whoseTurn.Contains(baseBoard.BoardMatrix[i,j]))
+                if(baseBoard.BoardMatrix[i, j] == whoseTurn[0] || baseBoard.BoardMatrix[i, j] == whoseTurn[1])
                 {
                     List<(int, int)> moves = baseBoard.GetMovesForPiece((i, j));
                     foreach((int, int) move in moves)
@@ -135,7 +137,7 @@ public class RawCheckersBoard
 
     public RawCheckersBoard(CheckersBoard oopBoard)
     {
-        BoardMatrix = new int[GlobalProperties.SquaresPerBoardSide, GlobalProperties.SquaresPerBoardSide];
+        BoardMatrix = new int[8, 8];
         BlackPieceCount = 0;
         WhitePieceCount = 0;
 
@@ -157,11 +159,11 @@ public class RawCheckersBoard
         BlackPieceCount = oldBoard.BlackPieceCount;
         WhitePieceCount = oldBoard.WhitePieceCount;
 
-        BoardMatrix = new int[GlobalProperties.SquaresPerBoardSide, GlobalProperties.SquaresPerBoardSide];
+        BoardMatrix = new int[8, 8];
 
-        for (int i = 0; i < GlobalProperties.SquaresPerBoardSide; i++)
+        for (int i = 0; i < 8; i++)
         {
-            for (int j = i % 2 == 0 ? 0 : 1; j < GlobalProperties.SquaresPerBoardSide; j += 2)
+            for (int j = i % 2 == 0 ? 0 : 1; j < 8; j += 2)
             {
                 BoardMatrix[i, j] = oldBoard.BoardMatrix[i, j];
             }
@@ -198,7 +200,7 @@ public class RawCheckersBoard
         }
 
         //check king
-        if (BoardMatrix[coord2.Item1, coord2.Item2] == 1 && coord2.Item2 == GlobalProperties.SquaresPerBoardSide - 1) //black king
+        if (BoardMatrix[coord2.Item1, coord2.Item2] == 1 && coord2.Item2 == 8 - 1) //black king
             BoardMatrix[coord2.Item1, coord2.Item2] = 3;
         else if (BoardMatrix[coord2.Item1, coord2.Item2] == 2 && coord2.Item2 == 0) //white king
             BoardMatrix[coord2.Item1, coord2.Item2] = 4;
@@ -225,19 +227,19 @@ public class RawCheckersBoard
             yOffset = new int[] { -1, -1 };
         }
 
-        int[] otherPiece = BoardMatrix[piece.Item1, piece.Item2] == 1 || BoardMatrix[piece.Item1, piece.Item2] == 3 ? new int[] { 2, 4 } : new int[] { 1, 3};
+        int[] otherPiece = BoardMatrix[piece.Item1, piece.Item2] == 1 || BoardMatrix[piece.Item1, piece.Item2] == 3 ? new int[] { 2, 4 } : new int[] { 1, 3 };
 
         for(int i = 0; i < xOffset.Length; i++)
         {
             int newMoveX = piece.Item1 + xOffset[i];
             int newMoveY = piece.Item2 + yOffset[i];
-            if (newMoveX >= 0 && newMoveX < GlobalProperties.SquaresPerBoardSide && newMoveY >= 0 && newMoveY < GlobalProperties.SquaresPerBoardSide) //new move is on board
+            if (newMoveX >= 0 && newMoveX < 8 && newMoveY >= 0 && newMoveY < 8) //new move is on board
             {
-                if(otherPiece.Contains(BoardMatrix[newMoveX, newMoveY])) //if new space is occupied by other piece, check for jump
+                if(BoardMatrix[newMoveX, newMoveY] == otherPiece[0] || BoardMatrix[newMoveX, newMoveY] == otherPiece[1]) //if new space is occupied by other piece, check for jump
                 {
                     int jumpMoveX = newMoveX + xOffset[i];
                     int jumpMoveY = newMoveY + yOffset[i];
-                    if (jumpMoveX >= 0 && jumpMoveX < GlobalProperties.SquaresPerBoardSide && jumpMoveY >= 0 && jumpMoveY < GlobalProperties.SquaresPerBoardSide && BoardMatrix[jumpMoveX, jumpMoveY] == 0) //new move is on board and empty
+                    if (jumpMoveX >= 0 && jumpMoveX < 8 && jumpMoveY >= 0 && jumpMoveY < 8 && BoardMatrix[jumpMoveX, jumpMoveY] == 0) //new move is on board and empty
                     {
                         moves.Add((jumpMoveX, jumpMoveY));
                     }

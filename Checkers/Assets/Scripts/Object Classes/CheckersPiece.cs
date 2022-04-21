@@ -27,7 +27,7 @@ public class CheckersPiece
         PieceGameObject = GlobalProperties.GameManager.MakeGameObjectForObject(GlobalProperties.Cylinder, name, absolutePosition, -Vector3.forward * GlobalProperties.SquareLength * 0.6f, new Vector3(90, 0, 0), color, gameObjectSpawnDelay, scaleFactor: 0.8f, heightScaleFactor: 0.1f);       
     }
 
-    public void MovePieceTo(Vector2 newBoardPosition)
+    public bool MovePieceTo(Vector2 newBoardPosition)
     {
         Vector2 boardOffset = newBoardPosition - BoardPosition;
         Vector2 movementOffset = boardOffset * GlobalProperties.SquareLength;
@@ -60,11 +60,13 @@ public class CheckersPiece
             ParentBoard.DoubleJumpState = true;
             ParentBoard.JumpingPiece = this;
             GlobalProperties.GameManager.HighlightPiece(this);
+            return false;
         }
         else
         {
             ParentBoard.DoubleJumpState = false;
             ParentBoard.JumpingPiece = null;
+            return true;
         }
     }
 

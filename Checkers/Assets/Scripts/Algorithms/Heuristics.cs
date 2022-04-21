@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+//GlobalProperties.SquaresPerBoardSide replaced with 8 for speed
 //black wants to maximize heuristic
 public static class Heuristics
 {
@@ -24,9 +25,9 @@ public static class Heuristics
     static int BoardScore(RawCheckersBoard board)
     {
         int score = 0;
-        for (int i = 0; i < GlobalProperties.SquaresPerBoardSide; i++)
+        for (int i = 0; i < 8; i++)
         {
-            for (int j = i % 2 == 0 ? 0 : 1; j < GlobalProperties.SquaresPerBoardSide; j+=2)
+            for (int j = i % 2 == 0 ? 0 : 1; j < 8; j+=2)
             {
                 if (board.BoardMatrix[i, j] != 0)
                 {
@@ -37,14 +38,14 @@ public static class Heuristics
 
                     else if (board.BoardMatrix[i, j] == 1)
                     {
-                        if (j > GlobalProperties.SquaresPerBoardSide / 2)
+                        if (j > 4)
                             score += 7;
                         else
                             score += 5;
                     }
                     else if (board.BoardMatrix[i, j] == 2)
                     {
-                        if (j < GlobalProperties.SquaresPerBoardSide / 2)
+                        if (j < 4)
                             score -= 7;
                         else
                             score -= 5;
@@ -61,9 +62,9 @@ public static class Heuristics
         List<(int, int)> blackPieces = new List<(int, int)>();
         List<(int, int)> whitePieces = new List<(int, int)>();
 
-        for(int i = 0; i < GlobalProperties.SquaresPerBoardSide; i++)
+        for(int i = 0; i < 8; i++)
         {
-            for(int j = 0; j < GlobalProperties.SquaresPerBoardSide; j++)
+            for(int j = 0; j < 8; j++)
             {
                 if (board.BoardMatrix[i,j] == 1 || board.BoardMatrix[i,j] == 3)
                     blackPieces.Add((i, j));

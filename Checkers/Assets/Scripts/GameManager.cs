@@ -359,6 +359,7 @@ public class GameManager : MonoBehaviour
         CanMove = false;
         Highlighter.SetActive(false);
         ResetLastMoveHighlight();
+        bool canSwitch = true;
 
         foreach (var newBoardPosition in newBoardPositions)
         {
@@ -385,13 +386,14 @@ public class GameManager : MonoBehaviour
             }
             piece.PieceGameObject.transform.localPosition = newPosition;
 
-            piece.MovePieceTo(newBoardPosition);
+            canSwitch = piece.MovePieceTo(newBoardPosition);
 
             Highlighter.SetActive(false);
             ResetLastMoveHighlight();
         }
 
-        SwitchPlayer();
+        if(canSwitch)
+            SwitchPlayer();
         CanMove = true;
     }
 

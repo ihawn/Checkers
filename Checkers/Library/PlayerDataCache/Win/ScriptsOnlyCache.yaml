@@ -23,6 +23,8 @@ ScriptsOnlyBuild:
     - TMPro.TMP_SpriteAsset
     - TMPro.TMP_StyleSheet
     - TMPro.TextMeshProUGUI
+    Unity.Timeline.Editor.dll:
+    - TimelineProjectSettings
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
     - UnityEditor.TestTools.TestRunner.TestListCacheData
@@ -88,61 +90,61 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 1454}
     - Class: 114
-      Script: {instanceID: 2216}
+      Script: {instanceID: 1560}
     - Class: 114
-      Script: {instanceID: 2290}
+      Script: {instanceID: 1634}
     - Class: 114
-      Script: {instanceID: 2396}
+      Script: {instanceID: 1742}
     - Class: 114
-      Script: {instanceID: 2410}
+      Script: {instanceID: 1756}
     - Class: 114
-      Script: {instanceID: 2422}
+      Script: {instanceID: 1768}
     - Class: 114
-      Script: {instanceID: 2548}
+      Script: {instanceID: 1894}
     - Class: 114
-      Script: {instanceID: 2662}
+      Script: {instanceID: 2016}
     - Class: 114
-      Script: {instanceID: 2760}
+      Script: {instanceID: 2118}
     - Class: 114
-      Script: {instanceID: 2884}
+      Script: {instanceID: 2250}
     - Class: 114
-      Script: {instanceID: 2978}
+      Script: {instanceID: 2352}
     - Class: 114
-      Script: {instanceID: 3134}
+      Script: {instanceID: 2510}
     - Class: 114
-      Script: {instanceID: 3258}
+      Script: {instanceID: 2636}
     - Class: 114
-      Script: {instanceID: 3316}
+      Script: {instanceID: 2696}
     - Class: 114
-      Script: {instanceID: 3334}
+      Script: {instanceID: 2714}
     - Class: 114
-      Script: {instanceID: 3354}
+      Script: {instanceID: 2734}
     - Class: 114
-      Script: {instanceID: 3452}
+      Script: {instanceID: 2836}
     - Class: 114
-      Script: {instanceID: 3508}
+      Script: {instanceID: 2892}
+    - Class: 114
+      Script: {instanceID: 3050}
+    - Class: 114
+      Script: {instanceID: 3062}
+    - Class: 114
+      Script: {instanceID: 3110}
+    - Class: 114
+      Script: {instanceID: 3188}
+    - Class: 114
+      Script: {instanceID: 3196}
+    - Class: 114
+      Script: {instanceID: 3212}
+    - Class: 114
+      Script: {instanceID: 3286}
+    - Class: 114
+      Script: {instanceID: 3314}
+    - Class: 114
+      Script: {instanceID: 3542}
     - Class: 114
       Script: {instanceID: 3664}
     - Class: 114
-      Script: {instanceID: 3676}
-    - Class: 114
-      Script: {instanceID: 3722}
-    - Class: 114
-      Script: {instanceID: 3798}
-    - Class: 114
-      Script: {instanceID: 3806}
-    - Class: 114
-      Script: {instanceID: 3822}
-    - Class: 114
-      Script: {instanceID: 3896}
-    - Class: 114
-      Script: {instanceID: 3924}
-    - Class: 114
-      Script: {instanceID: 4152}
-    - Class: 114
-      Script: {instanceID: 4272}
-    - Class: 114
-      Script: {instanceID: 4422}
+      Script: {instanceID: 3816}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -1227,4 +1229,4 @@ ScriptsOnlyBuild:
   platform: 5
   scenePathNames:
   - Assets/Scenes/MainScene.unity
-  playerPath: C:/Users/ihawn/Desktop/Checkers/Checkers.exe
+  playerPath: C:/Users/ihawn/Desktop/Checkers_2/Checkers.exe
