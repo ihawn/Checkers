@@ -92,7 +92,7 @@ public class CheckersBoard
     public List<Vector2> CaclulateJumpMovesForPiece(CheckersPiece piece)
     {
         Color otherColor = piece.Color == Color.white ? Color.black : Color.white;
-        return Squares.Where(s => s.OccupyingPiece == null &&
+        var possibleMoves = Squares.Where(s => s.OccupyingPiece == null &&
                                s.Color == GlobalProperties.DarkColor &&
                                Vector3.Magnitude(s.BoardPosition - piece.BoardPosition) < 2.83f && //distance is sqrt(8)
                                Vector3.Magnitude(s.BoardPosition - piece.BoardPosition) > 2.82f &&
@@ -101,5 +101,13 @@ public class CheckersBoard
                                Squares.FirstOrDefault(x => x.BoardPosition == new Vector2((s.BoardPosition.x + piece.BoardPosition.x) / 2, (s.BoardPosition.y + piece.BoardPosition.y) / 2)).OccupyingPiece.Color == otherColor)
                    .Select(x => x.BoardPosition)
                    .ToList();
+        if (!piece.IsKing)
+        {
+            if (piece.Color == Color.black)
+                possibleMoves = possibleMoves.Where(m => m.y > piece.BoardPosition.y).ToList();
+            else
+                possibleMoves = possibleMoves.Where(m => m.y < piece.BoardPosition.y).ToList();
+        }
+        return possibleMoves;
     }
 }
