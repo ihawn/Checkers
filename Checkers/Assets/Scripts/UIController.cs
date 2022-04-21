@@ -13,7 +13,7 @@ public class UIController : MonoBehaviour
     public GameObject GameOverlay;
     public GameObject GameStatsWindow;
     public TextMeshProUGUI GameStatsWindowText;
-    public CustomToggle PruningSwitch;
+    public SliderManager AnimationSpeedSlider;
     public bool InMenus;
 
     public void ShowMenuScreen()
@@ -57,6 +57,11 @@ public class UIController : MonoBehaviour
         GameOverScreenDraw.SetActive(false);
         PrintGameStats(-1, -1, -1);
         InMenus = false;
+    }
+
+    public void ChangeAnimationSpeed()
+    {
+        GlobalProperties.LerpSpeed = 5 + 30 * AnimationSpeedSlider.mainSlider.value;
     }
 
     public void PrintGameStats(float lastMoveTime, int movesExplored, int boardPosition)

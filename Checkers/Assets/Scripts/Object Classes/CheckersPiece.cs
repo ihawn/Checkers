@@ -65,7 +65,6 @@ public class CheckersPiece
         {
             ParentBoard.DoubleJumpState = false;
             ParentBoard.JumpingPiece = null;
-            GlobalProperties.GameManager.SwitchPlayer();
         }
     }
 

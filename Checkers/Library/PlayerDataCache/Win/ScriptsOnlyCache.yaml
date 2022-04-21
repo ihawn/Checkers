@@ -7,8 +7,10 @@ ScriptsOnlyBuild:
     - Michsky.UI.ModernUIPack.CustomToggle
     - Michsky.UI.ModernUIPack.HorizontalSelector
     - Michsky.UI.ModernUIPack.IconLibrary
+    - Michsky.UI.ModernUIPack.SliderManager
     - Michsky.UI.ModernUIPack.UIManager
     - Michsky.UI.ModernUIPack.UIManagerHSelector
+    - Michsky.UI.ModernUIPack.UIManagerSlider
     - Michsky.UI.ModernUIPack.UIManagerToggle
     - Michsky.UI.ModernUIPack.WindowDragger
     - UIController
@@ -37,6 +39,7 @@ ScriptsOnlyBuild:
     - UnityEngine.UI.LayoutElement
     - UnityEngine.UI.Mask
     - UnityEngine.UI.Outline
+    - UnityEngine.UI.Slider
     - UnityEngine.UI.Toggle
   sceneClasses:
     Assets/Scenes/MainScene.unity:
@@ -85,55 +88,61 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 1454}
     - Class: 114
-      Script: {instanceID: 1560}
+      Script: {instanceID: 2216}
     - Class: 114
-      Script: {instanceID: 1634}
+      Script: {instanceID: 2290}
     - Class: 114
-      Script: {instanceID: 1768}
+      Script: {instanceID: 2396}
     - Class: 114
-      Script: {instanceID: 1894}
+      Script: {instanceID: 2410}
     - Class: 114
-      Script: {instanceID: 2016}
+      Script: {instanceID: 2422}
     - Class: 114
-      Script: {instanceID: 2118}
+      Script: {instanceID: 2548}
     - Class: 114
-      Script: {instanceID: 2250}
+      Script: {instanceID: 2662}
     - Class: 114
-      Script: {instanceID: 2352}
+      Script: {instanceID: 2760}
     - Class: 114
-      Script: {instanceID: 2510}
+      Script: {instanceID: 2884}
     - Class: 114
-      Script: {instanceID: 2636}
+      Script: {instanceID: 2978}
     - Class: 114
-      Script: {instanceID: 2696}
+      Script: {instanceID: 3134}
     - Class: 114
-      Script: {instanceID: 2714}
+      Script: {instanceID: 3258}
     - Class: 114
-      Script: {instanceID: 2734}
+      Script: {instanceID: 3316}
     - Class: 114
-      Script: {instanceID: 2836}
+      Script: {instanceID: 3334}
     - Class: 114
-      Script: {instanceID: 2892}
+      Script: {instanceID: 3354}
     - Class: 114
-      Script: {instanceID: 3050}
+      Script: {instanceID: 3452}
     - Class: 114
-      Script: {instanceID: 3062}
-    - Class: 114
-      Script: {instanceID: 3110}
-    - Class: 114
-      Script: {instanceID: 3188}
-    - Class: 114
-      Script: {instanceID: 3196}
-    - Class: 114
-      Script: {instanceID: 3286}
-    - Class: 114
-      Script: {instanceID: 3314}
-    - Class: 114
-      Script: {instanceID: 3542}
+      Script: {instanceID: 3508}
     - Class: 114
       Script: {instanceID: 3664}
     - Class: 114
-      Script: {instanceID: 3816}
+      Script: {instanceID: 3676}
+    - Class: 114
+      Script: {instanceID: 3722}
+    - Class: 114
+      Script: {instanceID: 3798}
+    - Class: 114
+      Script: {instanceID: 3806}
+    - Class: 114
+      Script: {instanceID: 3822}
+    - Class: 114
+      Script: {instanceID: 3896}
+    - Class: 114
+      Script: {instanceID: 3924}
+    - Class: 114
+      Script: {instanceID: 4152}
+    - Class: 114
+      Script: {instanceID: 4272}
+    - Class: 114
+      Script: {instanceID: 4422}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -833,7 +842,7 @@ ScriptsOnlyBuild:
     className: EventSystem
   - hash:
       serializedVersion: 2
-      Hash: 0105a15835eaf1290a6e0c6932987013
+      Hash: 8021d27cc5158557c9a3ba561e72da02
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: UIController
@@ -1218,4 +1227,4 @@ ScriptsOnlyBuild:
   platform: 5
   scenePathNames:
   - Assets/Scenes/MainScene.unity
-  playerPath: C:/Users/Isaac/Documents/_games/Builds/Checkers/4-19-22_2/Checkers.exe
+  playerPath: C:/Users/ihawn/Desktop/Checkers/Checkers.exe

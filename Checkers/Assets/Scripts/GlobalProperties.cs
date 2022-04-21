@@ -18,7 +18,7 @@ public class GlobalProperties : MonoBehaviour
     public static int KingGuardWorth { get; private set; }
     public static int EndGameThreshold { get; private set; }
     public static int DrawMoveThreshold { get; private set; }
-    public static float LerpSpeed { get; private set; }
+    public static float LerpSpeed { get; set; }
     public static float ScaleSpeed { get; private set; }
     public static float SpawnDelayOffset { get; private set; }
     public static GameManager GameManager { get; private set; }

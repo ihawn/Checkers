@@ -369,7 +369,7 @@ public class GameManager : MonoBehaviour
 
             if (Mathf.Abs(boardOffset.x) > 1)
             {
-                while (Vector3.Distance(piece.PieceGameObject.transform.position, newPosition) > 0.03f)
+                while (Vector3.Distance(piece.PieceGameObject.transform.position, newPosition) > 0.1f)
                 {
                     piece.PieceGameObject.transform.localPosition = Vector3.Slerp(piece.PieceGameObject.transform.localPosition - slerpCenter, newPosition - slerpCenter, Mathf.Min(Time.deltaTime, 1 / 30f) * GlobalProperties.LerpSpeed) + slerpCenter;
                     yield return null;
@@ -377,7 +377,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                while (Vector3.Distance(piece.PieceGameObject.transform.position, newPosition) > 0.03f)
+                while (Vector3.Distance(piece.PieceGameObject.transform.position, newPosition) > 0.1f)
                 {
                     piece.PieceGameObject.transform.localPosition = Vector3.Lerp(piece.PieceGameObject.transform.localPosition, newPosition, Mathf.Min(Time.deltaTime, 1 / 30f) * GlobalProperties.LerpSpeed);
                     yield return null;
@@ -389,8 +389,9 @@ public class GameManager : MonoBehaviour
 
             Highlighter.SetActive(false);
             ResetLastMoveHighlight();
-        }    
+        }
 
+        SwitchPlayer();
         CanMove = true;
     }
 
