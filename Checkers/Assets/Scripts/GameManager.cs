@@ -153,8 +153,10 @@ public class GameManager : MonoBehaviour
         StartCoroutine(StartGameDelay());
     }
 
-    public void SwitchPlayer()
+    void SwitchPlayer()
     {
+        Highlighter.SetActive(false);
+        ResetLastMoveHighlight();
         Game.CurrentPlayer = Game.CurrentPlayer.PlayerColor == Color.black ? Game.Player2 : Game.Player1;
     }
 
@@ -178,7 +180,7 @@ public class GameManager : MonoBehaviour
                 {
                     ObjectLinker linker = hit.transform.gameObject.GetComponent<ObjectLinker>();
 
-                    if (linker.LinkedObject is CheckersPiece piece && piece.Color == Game.CurrentPlayer.PlayerColor)
+                    if (linker.LinkedObject is CheckersPiece piece && piece.Color == Game.CurrentPlayer.PlayerColor && (!Game.Board.DoubleJumpState || (Game.Board.DoubleJumpState && piece == Game.Board.JumpingPiece)))
                     {
                         HighlightPiece(piece);
                     }
@@ -387,9 +389,6 @@ public class GameManager : MonoBehaviour
             piece.PieceGameObject.transform.localPosition = newPosition;
 
             canSwitch = piece.MovePieceTo(newBoardPosition);
-
-            Highlighter.SetActive(false);
-            ResetLastMoveHighlight();
         }
 
         if(canSwitch)
