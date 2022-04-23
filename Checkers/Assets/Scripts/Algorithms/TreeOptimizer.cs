@@ -10,30 +10,28 @@ public class TreeOptimizer
 {
     //returns: position evaluation, raw board, move, piece, moves count
     //black is maximizing player
-    public static MinimaxResult Minimax(MinimaxInput input, MinimaxResult minEvaluation, MinimaxResult maxEvaluation, int depth, int originalDepth, List<Coord> originatingMoves, bool isMaximizingPlayer, Coord originatingPiece, bool usePruning, int alpha, int beta, int heuristicId, int moveCount)
+    public static MinimaxResult Minimax(MinimaxInput input, MinimaxResult minEvaluation, MinimaxResult maxEvaluation, int depth, int originalDepth, List<Coord> originatingMoves, bool isMaximizingPlayer, Coord originatingPiece, bool usePruning, int alpha, int beta, int heuristicId)
     {
         if(input == null || input.Board == null)
-            return new MinimaxResult(moveCount);
+            return new MinimaxResult();
 
-        int blackCount = input.Board.BlackPieceCount;
-        int whiteCount = input.Board.WhitePieceCount;
+        int blackCount = input.Board.BlackPiecesCount;
+        int whiteCount = input.Board.WhitePiecesCount;
         if (depth == 0 || blackCount == 0 || whiteCount == 0)
-            return new MinimaxResult(Heuristics.Heuristic(input.Board, heuristicId), input.Board, originatingMoves, originatingPiece, moveCount);
+            return new MinimaxResult(Heuristics.Heuristic(input.Board, heuristicId), input.Board, originatingMoves, originatingPiece);
 
         if (isMaximizingPlayer)
         {
-            BranchResult branchResult = GeneratePositionList(input.Board, new int[] { 1, 3 }, moveCount);
+            BranchResult branchResult = GeneratePositionList(input.Board, new int[] { 1, 3 });
             List<MinimaxInput> branchBoards = branchResult.Branches;
-            moveCount = branchResult.MoveEvaluationCount;
 
             foreach (MinimaxInput branch in branchBoards)
             {
                 originatingMoves = depth == originalDepth ? branch.Moves : originatingMoves; //keep track of the base piece and base move
                 originatingPiece = depth == originalDepth ? branch.Piece : originatingPiece;
 
-                MinimaxResult result = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMoves, false, originatingPiece, usePruning, alpha, beta, heuristicId, moveCount);
-                moveCount = result.MoveEvaluationCount;
-                maxEvaluation = result.MinimaxEvaluation > maxEvaluation.MinimaxEvaluation ? result : maxEvaluation;
+                MinimaxResult result = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMoves, false, originatingPiece, usePruning, alpha, beta, heuristicId);
+                maxEvaluation = result.MinimaxEvaluation > maxEvaluation.MinimaxEvaluation || (result.MinimaxEvaluation == maxEvaluation.MinimaxEvaluation && UnityEngine.Random.Range(0, 10) <= 5) ? result : maxEvaluation;
 
                 if(usePruning)
                 {
@@ -46,18 +44,16 @@ public class TreeOptimizer
         }
         else
         {
-            BranchResult branchResult = GeneratePositionList(input.Board, new int[] { 2, 4 }, moveCount);
+            BranchResult branchResult = GeneratePositionList(input.Board, new int[] { 2, 4 });
             List<MinimaxInput> branchBoards = branchResult.Branches;
-            moveCount = branchResult.MoveEvaluationCount;
 
             foreach (MinimaxInput branch in branchBoards)
             {
                 originatingMoves = depth == originalDepth ? branch.Moves : originatingMoves; //keep track of the base piece and base move
                 originatingPiece = depth == originalDepth ? branch.Piece : originatingPiece;
 
-                MinimaxResult result = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMoves, true, originatingPiece, usePruning, alpha, beta, heuristicId, moveCount);
-                moveCount = result.MoveEvaluationCount;
-                minEvaluation = result.MinimaxEvaluation < minEvaluation.MinimaxEvaluation ? result : minEvaluation;
+                MinimaxResult result = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMoves, true, originatingPiece, usePruning, alpha, beta, heuristicId);
+                minEvaluation = result.MinimaxEvaluation < minEvaluation.MinimaxEvaluation || (result.MinimaxEvaluation == minEvaluation.MinimaxEvaluation && UnityEngine.Random.Range(0, 10) <= 5) ? result : minEvaluation;
 
                 if(usePruning)
                 {
@@ -71,10 +67,9 @@ public class TreeOptimizer
     }
 
     //returns: board, move, piece | (List<(RawCheckersBoard, List<(int, int)>, (int, int))>, int)
-    static BranchResult GeneratePositionList(RawCheckersBoard baseBoard, int[] whoseTurn, int moveCount)
+    static BranchResult GeneratePositionList(RawCheckersBoard baseBoard, int[] whoseTurn)
     {
         List<MinimaxInput> boardListWithGeneratingMove = new List<MinimaxInput>();
-        //List<(int, int, List<(int, int)>)> currentPlayerPiecesAndMoves = new List<(int, int, List<(int, int)>)>(); //contains the coordinates of the piece and a list of its possible moves
 
         for (int i = 0; i < 8; i++)
         {
@@ -107,38 +102,26 @@ public class TreeOptimizer
                         }
 
                         boardListWithGeneratingMove.Add(new MinimaxInput(branchBoard, movesForPiece, new Coord(i, j)));
-                        moveCount++;
                     }
                 }
             }
-        }    
+        }
 
-        try
-        {
-            System.Random r = new System.Random();
-            boardListWithGeneratingMove.Sort((x, y) => r.Next(-1, 1));
-            return new BranchResult(boardListWithGeneratingMove, moveCount);
-        }
-        catch
-        {
-            return new BranchResult(boardListWithGeneratingMove, moveCount);
-        }
+        return new BranchResult(boardListWithGeneratingMove);
     }
 }
 
 //Bare bones checkers board class designed to be deep-copied quickly. Only to be used for decision tree checking
-public class RawCheckersBoard
+public class RawCheckersBoard : CheckersBoardBase
 {
     //0 = empty, 1 = black, 2 = white, 3 = black king, 4 = white king
     public int[,] BoardMatrix { get; set; }
-    public int BlackPieceCount { get; set; }
-    public int WhitePieceCount { get; set; }
 
     public RawCheckersBoard(CheckersBoard oopBoard)
     {
         BoardMatrix = new int[8, 8];
-        BlackPieceCount = 0;
-        WhitePieceCount = 0;
+        BlackPiecesCount = 0;
+        WhitePiecesCount = 0;
 
         foreach(CheckersPiece piece in oopBoard.Pieces)
         {
@@ -147,26 +130,19 @@ public class RawCheckersBoard
             else
                 BoardMatrix[(int)piece.BoardPosition.x, (int)piece.BoardPosition.y] = piece.Color == Color.black ? 1 : 2;
             if (piece.Color == Color.black)
-                BlackPieceCount++;
+                BlackPiecesCount++;
             else
-                WhitePieceCount++;          
+                WhitePiecesCount++;          
         }
     }
 
     public RawCheckersBoard(RawCheckersBoard oldBoard)
     {
-        BlackPieceCount = oldBoard.BlackPieceCount;
-        WhitePieceCount = oldBoard.WhitePieceCount;
+        BlackPiecesCount = oldBoard.BlackPiecesCount;
+        WhitePiecesCount = oldBoard.WhitePiecesCount;
 
         BoardMatrix = new int[8, 8];
-
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = i % 2 == 0 ? 0 : 1; j < 8; j += 2)
-            {
-                BoardMatrix[i, j] = oldBoard.BoardMatrix[i, j];
-            }
-        }
+        Buffer.BlockCopy(oldBoard.BoardMatrix, 0, BoardMatrix, 0, 256);
     }
 
     public void MovePiece(Coord coord1, Coord coord2)
@@ -182,16 +158,16 @@ public class RawCheckersBoard
             switch(BoardMatrix[(coord1.x + coord2.x) / 2, (coord1.y + coord2.y) / 2])
             {
                 case 1:
-                    BlackPieceCount--;
+                    BlackPiecesCount--;
                     break;
                 case 2:
-                    WhitePieceCount--;
+                    WhitePiecesCount--;
                     break;
                 case 3:
-                    BlackPieceCount--;
+                    BlackPiecesCount--;
                     break;
                 case 4:
-                    WhitePieceCount--;
+                    WhitePiecesCount--;
                     break;
             }
 
@@ -249,7 +225,6 @@ public class RawCheckersBoard
                 }
             }
         }
-
         return moves;
     }
 }

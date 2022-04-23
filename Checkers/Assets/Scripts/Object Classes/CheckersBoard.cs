@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public class CheckersBoard
+public class CheckersBoard : CheckersBoardBase
 {
     public List<CheckersPiece> Pieces { get; set; }
     public List<CheckersSquare> Squares { get; set; }
     public CheckersGame Game { get; set; }
-    public int BlackPiecesCount { get; set; }
-    public int WhitePiecesCount { get; set; }
     public int AIMovesExplored { get; set; }
     public bool DoubleJumpState { get; set; }
     public CheckersPiece JumpingPiece { get; set; }
