@@ -9,73 +9,72 @@ using System;
 public class TreeOptimizer
 {
     //returns: position evaluation, raw board, move, piece, moves count
-    public static (int, RawCheckersBoard, List<(int, int)>, (int, int), int) Minimax((RawCheckersBoard, List<(int, int)>, (int, int)) board, (int, RawCheckersBoard, List<(int, int)>, (int, int)) minEvaluation, (int, RawCheckersBoard, List<(int, int)>, (int, int)) maxEvaluation, int depth, int originalDepth, List<(int, int)> originatingMoves, bool isMaximizingPlayer, (int, int) originatingPiece, bool usePruning, int alpha, int beta, int heuristicId, int moveCount)
+    //black is maximizing player
+    public static MinimaxResult Minimax(MinimaxInput input, MinimaxResult minEvaluation, MinimaxResult maxEvaluation, int depth, int originalDepth, List<(int, int)> originatingMoves, bool isMaximizingPlayer, (int, int) originatingPiece, bool usePruning, int alpha, int beta, int heuristicId, int moveCount)
     {
-        if(board.Item1 == null)
-            return (0, null, new List<(int, int)>(), (-1, -1), moveCount);
+        if(input.Board == null)
+            return new MinimaxResult(moveCount);
 
-        int blackCount = board.Item1.BlackPieceCount;
-        int whiteCount = board.Item1.WhitePieceCount;
+        int blackCount = input.Board.BlackPieceCount;
+        int whiteCount = input.Board.WhitePieceCount;
         if (depth == 0 || blackCount == 0 || whiteCount == 0)
-            return (Heuristics.Heuristic(board.Item1, heuristicId), board.Item1, originatingMoves, originatingPiece, moveCount); //black player wants to maximize this value
+            return new MinimaxResult(Heuristics.Heuristic(input.Board, heuristicId), input.Board, originatingMoves, originatingPiece, moveCount);
 
         if (isMaximizingPlayer)
         {
-            (List<(RawCheckersBoard, List<(int, int)>, (int, int))>, int) branchResult = GeneratePositionList(board.Item1, new int[] { 1, 3 }, moveCount);
-            List<(RawCheckersBoard, List<(int, int)>, (int, int))> branchBoards = branchResult.Item1;
-            moveCount = branchResult.Item2;
+            BranchResult branchResult = GeneratePositionList(input.Board, new int[] { 1, 3 }, moveCount);
+            List<MinimaxInput> branchBoards = branchResult.Branches;
+            moveCount = branchResult.MoveEvaluationCount;
 
-            foreach ((RawCheckersBoard, List<(int, int)>, (int, int)) branch in branchBoards)
+            foreach (MinimaxInput branch in branchBoards)
             {
-                originatingMoves = depth == originalDepth ? branch.Item2 : originatingMoves; //keep track of the base piece and base move
-                originatingPiece = depth == originalDepth ? branch.Item3 : originatingPiece;
+                originatingMoves = depth == originalDepth ? branch.Moves : originatingMoves; //keep track of the base piece and base move
+                originatingPiece = depth == originalDepth ? branch.Piece : originatingPiece;
 
-                (int, RawCheckersBoard, List<(int, int)>, (int, int), int) result = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMoves, false, originatingPiece, usePruning, alpha, beta, heuristicId, moveCount);
-                var eval = (result.Item1, result.Item2, result.Item3, result.Item4);
-                moveCount = result.Item5;
-                maxEvaluation = eval.Item1 > maxEvaluation.Item1 ? eval : maxEvaluation;
+                MinimaxResult result = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMoves, false, originatingPiece, usePruning, alpha, beta, heuristicId, moveCount);
+                moveCount = result.MoveEvaluationCount;
+                maxEvaluation = result.MinimaxEvaluation > maxEvaluation.MinimaxEvaluation ? result : maxEvaluation;
 
                 if(usePruning)
                 {
-                    alpha = Math.Max(alpha, eval.Item1);
+                    alpha = Math.Max(alpha, maxEvaluation.MinimaxEvaluation);
                     if (beta <= alpha) //move was too good and the opponent will avoid this position
                         break;
                 }
             }
-            return (maxEvaluation.Item1, maxEvaluation.Item2, maxEvaluation.Item3, maxEvaluation.Item4, moveCount);
+            return maxEvaluation;
         }
         else
         {
-            (List<(RawCheckersBoard, List<(int, int)>, (int, int))>, int) branchResult = GeneratePositionList(board.Item1, new int[] { 2, 4 }, moveCount);
-            List<(RawCheckersBoard, List<(int, int)>, (int, int))> branchBoards = branchResult.Item1;
-            moveCount = branchResult.Item2;
+            BranchResult branchResult = GeneratePositionList(input.Board, new int[] { 2, 4 }, moveCount);
+            List<MinimaxInput> branchBoards = branchResult.Branches;
+            moveCount = branchResult.MoveEvaluationCount;
 
-            foreach ((RawCheckersBoard, List<(int, int)>, (int, int)) branch in branchBoards)
+            foreach (MinimaxInput branch in branchBoards)
             {
-                originatingMoves = depth == originalDepth ? branch.Item2 : originatingMoves; //keep track of the base piece and base move
-                originatingPiece = depth == originalDepth ? branch.Item3 : originatingPiece;
+                originatingMoves = depth == originalDepth ? branch.Moves : originatingMoves; //keep track of the base piece and base move
+                originatingPiece = depth == originalDepth ? branch.Piece : originatingPiece;
 
-                (int, RawCheckersBoard, List<(int, int)>, (int, int), int) result = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMoves, true, originatingPiece, usePruning, alpha, beta, heuristicId, moveCount);
-                var eval = (result.Item1, result.Item2, result.Item3, result.Item4);
-                moveCount = result.Item5;
-                minEvaluation = eval.Item1 < minEvaluation.Item1 ? eval : minEvaluation;
+                MinimaxResult result = Minimax(branch, minEvaluation, maxEvaluation, depth - 1, originalDepth, originatingMoves, true, originatingPiece, usePruning, alpha, beta, heuristicId, moveCount);
+                moveCount = result.MoveEvaluationCount;
+                minEvaluation = result.MinimaxEvaluation < minEvaluation.MinimaxEvaluation ? result : minEvaluation;
 
                 if(usePruning)
                 {
-                    beta = Math.Min(beta, eval.Item1);
+                    beta = Math.Min(beta, minEvaluation.MinimaxEvaluation);
                     if (beta <= alpha) //move was too good and the opponent will avoid this position
                         break;
                 }
             }
-            return (minEvaluation.Item1, minEvaluation.Item2, minEvaluation.Item3, minEvaluation.Item4, moveCount);
+            return minEvaluation;
         }
     }
 
-    //returns: board, move, piece
-    static (List<(RawCheckersBoard, List<(int, int)>, (int, int))>, int) GeneratePositionList(RawCheckersBoard baseBoard, int[] whoseTurn, int moveCount)
+    //returns: board, move, piece | (List<(RawCheckersBoard, List<(int, int)>, (int, int))>, int)
+    static BranchResult GeneratePositionList(RawCheckersBoard baseBoard, int[] whoseTurn, int moveCount)
     {
-        List<(RawCheckersBoard, List<(int, int)>, (int, int))> boardListWithGeneratingMove = new List<(RawCheckersBoard, List<(int, int)>, (int, int))>();
-        List<(int, int, List<(int, int)>)> currentPlayerPiecesAndMoves = new List<(int, int, List<(int, int)>)>(); //contains the coordinates of the piece and a list of its possible moves
+        List<MinimaxInput> boardListWithGeneratingMove = new List<MinimaxInput>();
+        //List<(int, int, List<(int, int)>)> currentPlayerPiecesAndMoves = new List<(int, int, List<(int, int)>)>(); //contains the coordinates of the piece and a list of its possible moves
 
         for (int i = 0; i < 8; i++)
         {
@@ -107,7 +106,7 @@ public class TreeOptimizer
                             }
                         }
 
-                        boardListWithGeneratingMove.Add((branchBoard, movesForPiece, (i, j)));
+                        boardListWithGeneratingMove.Add(new MinimaxInput(branchBoard, movesForPiece, (i, j)));
                         moveCount++;
                     }
                 }
@@ -118,11 +117,11 @@ public class TreeOptimizer
         {
             System.Random r = new System.Random();
             boardListWithGeneratingMove.Sort((x, y) => r.Next(-1, 1));
-            return (boardListWithGeneratingMove, moveCount);
+            return new BranchResult(boardListWithGeneratingMove, moveCount);
         }
         catch
         {
-            return (boardListWithGeneratingMove, moveCount);
+            return new BranchResult(boardListWithGeneratingMove, moveCount);
         }
     }
 }

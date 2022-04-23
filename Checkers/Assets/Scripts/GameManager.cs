@@ -226,22 +226,22 @@ public class GameManager : MonoBehaviour
             RawCheckersBoard rawBoard = new RawCheckersBoard(Game.Board);
 
             //eval, board, move, piece
-            (int, RawCheckersBoard, List<(int, int)>, (int, int)) minEvaluation = (int.MaxValue, rawBoard, new List<(int, int)>(), (-1, -1));
-            (int, RawCheckersBoard, List<(int, int)>, (int, int)) maxEvaluation = (int.MinValue, rawBoard, new List<(int, int)>(), (-1, -1));
-            (int, RawCheckersBoard, List<(int, int)>, (int, int), int) minimaxResult = TreeOptimizer.Minimax((rawBoard, new List<(int, int)>(), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, new List<(int, int)>(), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId, 0);
+            MinimaxResult minEvaluation = new MinimaxResult(true, rawBoard);
+            MinimaxResult maxEvaluation = new MinimaxResult(false, rawBoard);
+            MinimaxResult minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<(int, int)>(), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId, 0);
 
-            List<Vector2> newMovePositions = minimaxResult.Item3.Select(m => new Vector2(m.Item1, m.Item2)).ToList();
-            Vector2 pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
+            List<Vector2> newMovePositions = minimaxResult.Moves.Select(m => new Vector2(m.Item1, m.Item2)).ToList();
+            Vector2 pieceToMovePosition = new Vector2(minimaxResult.Piece.Item1, minimaxResult.Piece.Item2);
 
             while ((pieceToMovePosition.x == -1 || newMovePositions.Count == 0) && depth > 2) //gets triggered when depth is larger than the number of moves left
             {
                 depth -= 2;
-                minEvaluation = (int.MaxValue, rawBoard, new List<(int, int)>(), (-1, -1));
-                maxEvaluation = (int.MinValue, rawBoard, new List<(int, int)>(), (-1, -1));
-                minimaxResult = TreeOptimizer.Minimax((rawBoard, new List<(int, int)>(), (-1, -1)), minEvaluation, maxEvaluation, depth, depth, new List<(int, int)>(), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId, 0);
+                minEvaluation = new MinimaxResult(true, rawBoard);
+                maxEvaluation = new MinimaxResult(false, rawBoard);
+                minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<(int, int)>(), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId, 0);
 
-                newMovePositions = minimaxResult.Item3.Select(m => new Vector2(m.Item1, m.Item2)).ToList();
-                pieceToMovePosition = new Vector2(minimaxResult.Item4.Item1, minimaxResult.Item4.Item2);
+                newMovePositions = minimaxResult.Moves.Select(m => new Vector2(m.Item1, m.Item2)).ToList();
+                pieceToMovePosition = new Vector2(minimaxResult.Piece.Item1, minimaxResult.Piece.Item2);
             }
 
             //failsafe
@@ -262,7 +262,7 @@ public class GameManager : MonoBehaviour
             StartCoroutine(MovePieceSmoothly(pieceToMove, newMovePositions));
 
             //Debug.Log("Moved (" + pieceToMovePosition.x + ", " + pieceToMovePosition.y + ") to (" + newMovePosition.x + ", " + newMovePosition.y + ")");
-            UIController.PrintGameStats(watch.ElapsedMilliseconds / 1000f, minimaxResult.Item5, minimaxResult.Item1);
+            UIController.PrintGameStats(watch.ElapsedMilliseconds / 1000f, minimaxResult.MoveEvaluationCount, minimaxResult.MinimaxEvaluation);
         }
     }
 
