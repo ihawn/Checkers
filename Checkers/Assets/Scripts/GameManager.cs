@@ -224,11 +224,12 @@ public class GameManager : MonoBehaviour
             int beta = int.MaxValue;
 
             RawCheckersBoard rawBoard = new RawCheckersBoard(Game.Board);
+            Stack<List<Coord>> moveStack = new Stack<List<Coord>>();
 
             //eval, board, move, piece
             MinimaxResult minEvaluation = new MinimaxResult(true, rawBoard);
             MinimaxResult maxEvaluation = new MinimaxResult(false, rawBoard);
-            MinimaxResult minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<Coord>(), Game.CurrentPlayer.PlayerColor == Color.black, new Coord(0, 0), UsePruning, alpha, beta, heuristicId, 0);
+            MinimaxResult minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), moveStack, minEvaluation, maxEvaluation, depth, depth, new List<Coord>(), Game.CurrentPlayer.PlayerColor == Color.black, new Coord(0, 0), UsePruning, alpha, beta, heuristicId, 0);
 
             List<Vector2> newMovePositions = minimaxResult.Moves.Select(m => (Vector2)m).ToList();
             Vector2 pieceToMovePosition = minimaxResult.Piece;
@@ -236,9 +237,10 @@ public class GameManager : MonoBehaviour
             while ((pieceToMovePosition.x == -1 || newMovePositions.Count == 0) && depth > 2) //gets triggered when depth is larger than the number of moves left
             {
                 depth -= 2;
+                moveStack = new Stack<List<Coord>>();
                 minEvaluation = new MinimaxResult(true, rawBoard);
                 maxEvaluation = new MinimaxResult(false, rawBoard);
-                minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<Coord>(), Game.CurrentPlayer.PlayerColor == Color.black, new Coord(0, 0), UsePruning, alpha, beta, heuristicId, 0);
+                minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), moveStack, minEvaluation, maxEvaluation, depth, depth, new List<Coord>(), Game.CurrentPlayer.PlayerColor == Color.black, new Coord(0, 0), UsePruning, alpha, beta, heuristicId, 0);
 
                 newMovePositions = minimaxResult.Moves.Select(m => (Vector2)m).ToList();
                 pieceToMovePosition = minimaxResult.Piece;

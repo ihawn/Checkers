@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public abstract class BoardMovesPiece<BoardType, PieceType>
 {
     public virtual BoardType Board { get; set; }
