@@ -25,33 +25,26 @@ public class MinimaxInput : BoardMovesPiece<RawCheckersBoard, Coord>
     }
 }
 
-public class MinimaxCompleteInput : BoardMovesPiece<RawCheckersBoard, Coord>
-{
-    public int MoveEvaluationCount { get; set; }
-}
-
-public class BranchResult : MinimaxCompleteInput
+public class BranchResult : BoardMovesPiece<RawCheckersBoard, Coord>
 {
     public List<MinimaxInput> Branches { get; set; }
 
-    public BranchResult(List<MinimaxInput> branches, int moveEvaluationCount)
+    public BranchResult(List<MinimaxInput> branches)
     {
         Branches = branches;
-        MoveEvaluationCount = moveEvaluationCount;
     }
 }
 
-public class MinimaxResult : MinimaxCompleteInput
+public class MinimaxResult : BoardMovesPiece<RawCheckersBoard, Coord>
 {
     public int MinimaxEvaluation { get; set; }
 
-    public MinimaxResult(int moveCount)
+    public MinimaxResult()
     {
         MinimaxEvaluation = 0;
         Board = null;
         Moves = new List<Coord>();
         Piece = new Coord();
-        MoveEvaluationCount = moveCount;
     }
 
     public MinimaxResult(bool isMin, RawCheckersBoard board)
@@ -60,15 +53,13 @@ public class MinimaxResult : MinimaxCompleteInput
         Board = board;
         Moves = new List<Coord>();
         Piece = new Coord();
-        MoveEvaluationCount = 0;
     }
 
-    public MinimaxResult(int evaluation, RawCheckersBoard board, List<Coord> moves, Coord piece, int moveCount)
+    public MinimaxResult(int evaluation, RawCheckersBoard board, List<Coord> moves, Coord piece)
     {
         MinimaxEvaluation = evaluation;
         Board = board;
         Moves = moves;
         Piece = piece;
-        MoveEvaluationCount = moveCount;
     }
 }

@@ -55,7 +55,7 @@ public class UIController : MonoBehaviour
         GameOverScreenBlackWins.SetActive(false);
         GameOverScreenWhiteWins.SetActive(false);
         GameOverScreenDraw.SetActive(false);
-        PrintGameStats(-1, -1, -1);
+        PrintGameStats(-1, -1);
         InMenus = false;
     }
 
@@ -64,8 +64,8 @@ public class UIController : MonoBehaviour
         GlobalProperties.LerpSpeed = 5 + 30 * AnimationSpeedSlider.mainSlider.value;
     }
 
-    public void PrintGameStats(float lastMoveTime, int movesExplored, int boardPosition)
+    public void PrintGameStats(float lastMoveTime, int boardPosition)
     {
-        GameStatsWindowText.text = "Last Move Time: " + lastMoveTime + "\nMoves Explored: " + movesExplored + "\nBoard Position: " + boardPosition;
+        GameStatsWindowText.text = "Last Move Time: " + lastMoveTime + "\nBoard Position: " + boardPosition;
     }
 }

@@ -228,7 +228,7 @@ public class GameManager : MonoBehaviour
             //eval, board, move, piece
             MinimaxResult minEvaluation = new MinimaxResult(true, rawBoard);
             MinimaxResult maxEvaluation = new MinimaxResult(false, rawBoard);
-            MinimaxResult minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<Coord>(), Game.CurrentPlayer.PlayerColor == Color.black, new Coord(0, 0), UsePruning, alpha, beta, heuristicId, 0);
+            MinimaxResult minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<Coord>(), Game.CurrentPlayer.PlayerColor == Color.black, new Coord(0, 0), UsePruning, alpha, beta, heuristicId);
 
             List<Vector2> newMovePositions = minimaxResult.Moves.Select(m => (Vector2)m).ToList();
             Vector2 pieceToMovePosition = minimaxResult.Piece;
@@ -238,7 +238,7 @@ public class GameManager : MonoBehaviour
                 depth -= 2;
                 minEvaluation = new MinimaxResult(true, rawBoard);
                 maxEvaluation = new MinimaxResult(false, rawBoard);
-                minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<Coord>(), Game.CurrentPlayer.PlayerColor == Color.black, new Coord(0, 0), UsePruning, alpha, beta, heuristicId, 0);
+                minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<Coord>(), Game.CurrentPlayer.PlayerColor == Color.black, new Coord(0, 0), UsePruning, alpha, beta, heuristicId);
 
                 newMovePositions = minimaxResult.Moves.Select(m => (Vector2)m).ToList();
                 pieceToMovePosition = minimaxResult.Piece;
@@ -262,7 +262,7 @@ public class GameManager : MonoBehaviour
             StartCoroutine(MovePieceSmoothly(pieceToMove, newMovePositions));
 
             //Debug.Log("Moved (" + pieceToMovePosition.x + ", " + pieceToMovePosition.y + ") to (" + newMovePosition.x + ", " + newMovePosition.y + ")");
-            UIController.PrintGameStats(watch.ElapsedMilliseconds / 1000f, minimaxResult.MoveEvaluationCount, minimaxResult.MinimaxEvaluation);
+            UIController.PrintGameStats(watch.ElapsedMilliseconds / 1000f, minimaxResult.MinimaxEvaluation);
         }
     }
 

@@ -11,13 +11,13 @@ public static class Heuristics
         switch(which)
         {
             case 1:
-                return board.BlackPieceCount - board.WhitePieceCount;
+                return board.BlackPiecesCount - board.WhitePiecesCount;
             case 2:
                 return BoardScore(board);
             case 3:
                 return PieceDistance(board)/2 + BoardScore(board);
             default:
-                return board.BlackPieceCount - board.WhitePieceCount;
+                return board.BlackPiecesCount - board.WhitePiecesCount;
         }
     }
 

@@ -23,8 +23,6 @@ ScriptsOnlyBuild:
     - TMPro.TMP_SpriteAsset
     - TMPro.TMP_StyleSheet
     - TMPro.TextMeshProUGUI
-    Unity.Timeline.Editor.dll:
-    - TimelineProjectSettings
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
     - UnityEditor.TestTools.TestRunner.TestListCacheData
@@ -110,41 +108,41 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 2352}
     - Class: 114
-      Script: {instanceID: 2510}
+      Script: {instanceID: 2512}
     - Class: 114
-      Script: {instanceID: 2636}
+      Script: {instanceID: 2640}
     - Class: 114
-      Script: {instanceID: 2696}
+      Script: {instanceID: 2700}
     - Class: 114
-      Script: {instanceID: 2714}
+      Script: {instanceID: 2718}
     - Class: 114
-      Script: {instanceID: 2734}
+      Script: {instanceID: 2738}
     - Class: 114
-      Script: {instanceID: 2836}
+      Script: {instanceID: 2840}
     - Class: 114
-      Script: {instanceID: 2892}
+      Script: {instanceID: 2896}
     - Class: 114
-      Script: {instanceID: 3050}
+      Script: {instanceID: 3054}
     - Class: 114
-      Script: {instanceID: 3062}
+      Script: {instanceID: 3066}
     - Class: 114
-      Script: {instanceID: 3110}
+      Script: {instanceID: 3114}
     - Class: 114
-      Script: {instanceID: 3188}
+      Script: {instanceID: 3192}
     - Class: 114
-      Script: {instanceID: 3196}
+      Script: {instanceID: 3200}
     - Class: 114
-      Script: {instanceID: 3212}
+      Script: {instanceID: 3216}
     - Class: 114
-      Script: {instanceID: 3286}
+      Script: {instanceID: 3290}
     - Class: 114
-      Script: {instanceID: 3314}
+      Script: {instanceID: 3318}
     - Class: 114
-      Script: {instanceID: 3542}
+      Script: {instanceID: 3546}
     - Class: 114
-      Script: {instanceID: 3664}
+      Script: {instanceID: 3668}
     - Class: 114
-      Script: {instanceID: 3816}
+      Script: {instanceID: 3820}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 128
@@ -1229,4 +1227,4 @@ ScriptsOnlyBuild:
   platform: 5
   scenePathNames:
   - Assets/Scenes/MainScene.unity
-  playerPath: C:/Users/ihawn/Desktop/Checkers_2/Checkers.exe
+  playerPath: C:/Users/Isaac/Documents/_games/Builds/Checkers/4-23-22_5/Checkers.exe
