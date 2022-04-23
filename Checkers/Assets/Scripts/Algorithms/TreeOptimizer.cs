@@ -10,9 +10,9 @@ public class TreeOptimizer
 {
     //returns: position evaluation, raw board, move, piece, moves count
     //black is maximizing player
-    public static MinimaxResult Minimax(MinimaxInput input, MinimaxResult minEvaluation, MinimaxResult maxEvaluation, int depth, int originalDepth, List<(int, int)> originatingMoves, bool isMaximizingPlayer, (int, int) originatingPiece, bool usePruning, int alpha, int beta, int heuristicId, int moveCount)
+    public static MinimaxResult Minimax(MinimaxInput input, MinimaxResult minEvaluation, MinimaxResult maxEvaluation, int depth, int originalDepth, List<Coord> originatingMoves, bool isMaximizingPlayer, Coord originatingPiece, bool usePruning, int alpha, int beta, int heuristicId, int moveCount)
     {
-        if(input.Board == null)
+        if(input == null || input.Board == null)
             return new MinimaxResult(moveCount);
 
         int blackCount = input.Board.BlackPieceCount;
@@ -82,19 +82,19 @@ public class TreeOptimizer
             {
                 if(baseBoard.BoardMatrix[i, j] == whoseTurn[0] || baseBoard.BoardMatrix[i, j] == whoseTurn[1])
                 {
-                    List<(int, int)> moves = baseBoard.GetMovesForPiece((i, j));
-                    foreach((int, int) move in moves)
+                    List<Coord> moves = baseBoard.GetMovesForPiece(new Coord(i, j));
+                    foreach(Coord move in moves)
                     {
                         RawCheckersBoard branchBoard = new RawCheckersBoard(baseBoard);
-                        branchBoard.MovePiece((i, j), move);
-                        List<(int, int)> movesForPiece = new List<(int, int)>() { move };
+                        branchBoard.MovePiece(new Coord(i, j), move);
+                        List<Coord> movesForPiece = new List<Coord>() { move };
 
                         //multiple jumps
-                        (int, int) jumpMove = move;
-                        (int, int) currentPos = (i, j);
-                        while(Math.Abs(currentPos.Item1 - jumpMove.Item1) == 2)
+                        Coord jumpMove = move;
+                        Coord currentPos = new Coord(i, j);
+                        while(Math.Abs(currentPos.x - jumpMove.x) == 2)
                         {
-                            List<(int, int)> jumpMoves = branchBoard.GetMovesForPiece(jumpMove).Where(m => Math.Abs(jumpMove.Item1 - m.Item1) > 1.1f).ToList();
+                            List<Coord> jumpMoves = branchBoard.GetMovesForPiece(jumpMove).Where(m => Math.Abs(jumpMove.x - m.x) > 1.1f).ToList();
                             if (jumpMoves.Count == 0)
                                 break;
                             else
@@ -106,7 +106,7 @@ public class TreeOptimizer
                             }
                         }
 
-                        boardListWithGeneratingMove.Add(new MinimaxInput(branchBoard, movesForPiece, (i, j)));
+                        boardListWithGeneratingMove.Add(new MinimaxInput(branchBoard, movesForPiece, new Coord(i, j)));
                         moveCount++;
                     }
                 }
@@ -169,17 +169,17 @@ public class RawCheckersBoard
         }
     }
 
-    public void MovePiece((int, int) coord1, (int, int) coord2)
+    public void MovePiece(Coord coord1, Coord coord2)
     {
         //movement
-        int piece = BoardMatrix[coord1.Item1, coord1.Item2];
-        BoardMatrix[coord2.Item1, coord2.Item2] = piece;
-        BoardMatrix[coord1.Item1, coord1.Item2] = 0;
+        int piece = BoardMatrix[coord1.x, coord1.y];
+        BoardMatrix[coord2.x, coord2.y] = piece;
+        BoardMatrix[coord1.x, coord1.y] = 0;
 
         //check jump
-        if (Math.Abs(coord1.Item1 - coord2.Item1) == 2)
+        if (Math.Abs(coord1.x - coord2.x) == 2)
         {
-            switch(BoardMatrix[(coord1.Item1 + coord2.Item1) / 2, (coord1.Item2 + coord2.Item2) / 2])
+            switch(BoardMatrix[(coord1.x + coord2.x) / 2, (coord1.y + coord2.y) / 2])
             {
                 case 1:
                     BlackPieceCount--;
@@ -195,27 +195,27 @@ public class RawCheckersBoard
                     break;
             }
 
-            BoardMatrix[(coord1.Item1 + coord2.Item1) / 2, (coord1.Item2 + coord2.Item2) / 2] = 0;
+            BoardMatrix[(coord1.x + coord2.x) / 2, (coord1.y + coord2.y) / 2] = 0;
         }
 
         //check king
-        if (BoardMatrix[coord2.Item1, coord2.Item2] == 1 && coord2.Item2 == 8 - 1) //black king
-            BoardMatrix[coord2.Item1, coord2.Item2] = 3;
-        else if (BoardMatrix[coord2.Item1, coord2.Item2] == 2 && coord2.Item2 == 0) //white king
-            BoardMatrix[coord2.Item1, coord2.Item2] = 4;
+        if (BoardMatrix[coord2.x, coord2.y] == 1 && coord2.y == 8 - 1) //black king
+            BoardMatrix[coord2.x, coord2.y] = 3;
+        else if (BoardMatrix[coord2.x, coord2.y] == 2 && coord2.y == 0) //white king
+            BoardMatrix[coord2.x, coord2.y] = 4;
     }
 
-    public List<(int, int)> GetMovesForPiece((int, int) piece)
+    public List<Coord> GetMovesForPiece(Coord piece)
     {
-        List<(int, int)> moves = new List<(int, int)>();
+        List<Coord> moves = new List<Coord>();
         int[] xOffset;
         int[] yOffset;
-        if(BoardMatrix[piece.Item1, piece.Item2] == 3 || BoardMatrix[piece.Item1, piece.Item2] == 4) //kings
+        if(BoardMatrix[piece.x, piece.y] == 3 || BoardMatrix[piece.x, piece.y] == 4) //kings
         {
             xOffset = new int[] { -1, -1, 1, 1 };
             yOffset = new int[] { 1, -1, 1, -1 };
         }
-        else if(BoardMatrix[piece.Item1, piece.Item2] == 1) //black non-king
+        else if(BoardMatrix[piece.x, piece.y] == 1) //black non-king
         {
             xOffset = new int[] { -1, 1 };
             yOffset = new int[] { 1, 1 };
@@ -226,12 +226,12 @@ public class RawCheckersBoard
             yOffset = new int[] { -1, -1 };
         }
 
-        int[] otherPiece = BoardMatrix[piece.Item1, piece.Item2] == 1 || BoardMatrix[piece.Item1, piece.Item2] == 3 ? new int[] { 2, 4 } : new int[] { 1, 3 };
+        int[] otherPiece = BoardMatrix[piece.x, piece.y] == 1 || BoardMatrix[piece.x, piece.y] == 3 ? new int[] { 2, 4 } : new int[] { 1, 3 };
 
         for(int i = 0; i < xOffset.Length; i++)
         {
-            int newMoveX = piece.Item1 + xOffset[i];
-            int newMoveY = piece.Item2 + yOffset[i];
+            int newMoveX = piece.x + xOffset[i];
+            int newMoveY = piece.y + yOffset[i];
             if (newMoveX >= 0 && newMoveX < 8 && newMoveY >= 0 && newMoveY < 8) //new move is on board
             {
                 if(BoardMatrix[newMoveX, newMoveY] == otherPiece[0] || BoardMatrix[newMoveX, newMoveY] == otherPiece[1]) //if new space is occupied by other piece, check for jump
@@ -240,16 +240,36 @@ public class RawCheckersBoard
                     int jumpMoveY = newMoveY + yOffset[i];
                     if (jumpMoveX >= 0 && jumpMoveX < 8 && jumpMoveY >= 0 && jumpMoveY < 8 && BoardMatrix[jumpMoveX, jumpMoveY] == 0) //new move is on board and empty
                     {
-                        moves.Add((jumpMoveX, jumpMoveY));
+                        moves.Add(new Coord(jumpMoveX, jumpMoveY));
                     }
                 }
                 else if (BoardMatrix[newMoveX, newMoveY] == 0) //new space is unoccupied
                 {
-                    moves.Add((newMoveX, newMoveY));
+                    moves.Add(new Coord(newMoveX, newMoveY));
                 }
             }
         }
 
         return moves;
     }
+}
+
+public class Coord
+{
+    public int x;
+    public int y;
+
+    public Coord()
+    {
+        x = -1;
+        y = -1;
+    }
+
+    public Coord(int X, int Y)
+    {
+        x = X;
+        y = Y;
+    }
+
+    public static implicit operator Vector2(Coord rawMove) => new Vector2(rawMove.x, rawMove.y);
 }

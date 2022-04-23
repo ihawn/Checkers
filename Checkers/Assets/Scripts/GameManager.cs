@@ -228,20 +228,20 @@ public class GameManager : MonoBehaviour
             //eval, board, move, piece
             MinimaxResult minEvaluation = new MinimaxResult(true, rawBoard);
             MinimaxResult maxEvaluation = new MinimaxResult(false, rawBoard);
-            MinimaxResult minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<(int, int)>(), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId, 0);
+            MinimaxResult minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<Coord>(), Game.CurrentPlayer.PlayerColor == Color.black, new Coord(0, 0), UsePruning, alpha, beta, heuristicId, 0);
 
-            List<Vector2> newMovePositions = minimaxResult.Moves.Select(m => new Vector2(m.Item1, m.Item2)).ToList();
-            Vector2 pieceToMovePosition = new Vector2(minimaxResult.Piece.Item1, minimaxResult.Piece.Item2);
+            List<Vector2> newMovePositions = minimaxResult.Moves.Select(m => (Vector2)m).ToList();
+            Vector2 pieceToMovePosition = minimaxResult.Piece;
 
             while ((pieceToMovePosition.x == -1 || newMovePositions.Count == 0) && depth > 2) //gets triggered when depth is larger than the number of moves left
             {
                 depth -= 2;
                 minEvaluation = new MinimaxResult(true, rawBoard);
                 maxEvaluation = new MinimaxResult(false, rawBoard);
-                minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<(int, int)>(), Game.CurrentPlayer.PlayerColor == Color.black, (0, 0), UsePruning, alpha, beta, heuristicId, 0);
+                minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<Coord>(), Game.CurrentPlayer.PlayerColor == Color.black, new Coord(0, 0), UsePruning, alpha, beta, heuristicId, 0);
 
-                newMovePositions = minimaxResult.Moves.Select(m => new Vector2(m.Item1, m.Item2)).ToList();
-                pieceToMovePosition = new Vector2(minimaxResult.Piece.Item1, minimaxResult.Piece.Item2);
+                newMovePositions = minimaxResult.Moves.Select(m => (Vector2)m).ToList();
+                pieceToMovePosition = minimaxResult.Piece;
             }
 
             //failsafe
@@ -348,12 +348,14 @@ public class GameManager : MonoBehaviour
 
         yield return new WaitForSeconds(startDelay);
 
-        while (Vector3.Distance(originalScale, g.transform.localScale) > 0.03f)
+        while (g != null && Vector3.Distance(originalScale, g.transform.localScale) > 0.03f)
         {
             g.transform.localScale = Vector3.Lerp(g.transform.localScale, originalScale, Time.deltaTime * GlobalProperties.ScaleSpeed);
             yield return null;
         }
-        g.transform.localScale = originalScale;
+
+        if(g != null)
+            g.transform.localScale = originalScale;
     }
 
     IEnumerator MovePieceSmoothly(CheckersPiece piece, List<Vector2> newBoardPositions)
