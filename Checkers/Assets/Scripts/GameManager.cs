@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System;
-using TakeTurns.Containers;
-using TakeTurns;
 
 public class GameManager : MonoBehaviour
 {
