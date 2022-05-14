@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using System;
+using TakeTurns.Containers;
+using TakeTurns;
 
 public class GameManager : MonoBehaviour
 {
@@ -12,6 +14,7 @@ public class GameManager : MonoBehaviour
     public GameObject Highlighter { get; private set; }
     public UIController UIController { get; private set; }
     public bool CanMove { get; private set; }
+    private Moves Moves { get; set; }
 
     [SerializeField]
     PlayerType Player1Type;
@@ -38,6 +41,7 @@ public class GameManager : MonoBehaviour
         GlobalProperties = GetComponent<GlobalProperties>();
         UIController = GetComponent<UIController>();
         GlobalProperties.InitializeGlobalProperties();
+        Moves = new Moves();
         HighlighterInit();
 
         Player1Type = PlayerType.Human;
@@ -218,51 +222,14 @@ public class GameManager : MonoBehaviour
     {
         if(CanMove)
         {
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-
-            int alpha = int.MinValue;
-            int beta = int.MaxValue;
-
             RawCheckersBoard rawBoard = new RawCheckersBoard(Game.Board);
+            var MinimaxOutput = Moves.GetBestMove(rawBoard, depth, Game.CurrentPlayer.PlayerColor == Color.black);
 
-            //eval, board, move, piece
-            MinimaxResult minEvaluation = new MinimaxResult(true, rawBoard);
-            MinimaxResult maxEvaluation = new MinimaxResult(false, rawBoard);
-            MinimaxResult minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<Coord>(), Game.CurrentPlayer.PlayerColor == Color.black, new Coord(0, 0), UsePruning, alpha, beta, heuristicId);
-
-            List<Vector2> newMovePositions = minimaxResult.Moves.Select(m => (Vector2)m).ToList();
-            Vector2 pieceToMovePosition = minimaxResult.Piece;
-
-            while ((pieceToMovePosition.x == -1 || newMovePositions.Count == 0) && depth > 2) //gets triggered when depth is larger than the number of moves left
-            {
-                depth -= 2;
-                minEvaluation = new MinimaxResult(true, rawBoard);
-                maxEvaluation = new MinimaxResult(false, rawBoard);
-                minimaxResult = TreeOptimizer.Minimax(new MinimaxInput(rawBoard), minEvaluation, maxEvaluation, depth, depth, new List<Coord>(), Game.CurrentPlayer.PlayerColor == Color.black, new Coord(0, 0), UsePruning, alpha, beta, heuristicId);
-
-                newMovePositions = minimaxResult.Moves.Select(m => (Vector2)m).ToList();
-                pieceToMovePosition = minimaxResult.Piece;
-            }
-
-            //failsafe
-            if (pieceToMovePosition.x == -1)
-                pieceToMovePosition = Game.Board.Pieces.FirstOrDefault(p => p.Color == Game.CurrentPlayer.PlayerColor && p.PossibleMoves.Count > 0).BoardPosition;
-
-            if (newMovePositions.Count == 0)
-            {
-                CheckersPiece newPiece = Game.Board.Pieces.FirstOrDefault(p => p.BoardPosition == pieceToMovePosition);
-                if (newPiece.PossibleMoves.Count > 0)
-                    newMovePositions = new List<Vector2>() { newPiece.PossibleMoves[0] };
-                else
-                    newMovePositions = new List<Vector2>() { Game.Board.Pieces.FirstOrDefault(p => p.Color == Game.CurrentPlayer.PlayerColor && p.PossibleMoves.Count > 0).PossibleMoves[0] };
-            }
-            watch.Stop();
+            List<Vector2> newMovePositions = MinimaxOutput.Moves.Select(m => (Vector2)m).ToList();
+            Vector2 pieceToMovePosition = MinimaxOutput.Agent;
 
             CheckersPiece pieceToMove = Game.Board.Pieces.FirstOrDefault(p => p.BoardPosition == pieceToMovePosition);
             StartCoroutine(MovePieceSmoothly(pieceToMove, newMovePositions));
-
-            //Debug.Log("Moved (" + pieceToMovePosition.x + ", " + pieceToMovePosition.y + ") to (" + newMovePosition.x + ", " + newMovePosition.y + ")");
-            UIController.PrintGameStats(watch.ElapsedMilliseconds / 1000f, minimaxResult.MinimaxEvaluation);
         }
     }
 
