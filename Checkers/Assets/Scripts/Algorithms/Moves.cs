@@ -10,21 +10,12 @@ public class Moves : TakeTurns<RawCheckersBoard, Coord, Coord>
 {
     public override float GetGameEvaluation(RawCheckersBoard board)
     {
-        int blackCount = GetAgentCount(board, true);
-        int whiteCount = GetAgentCount(board, false);
         return Heuristics.Heuristic(board, 3);
     }
 
-    public override int GetAgentCount(RawCheckersBoard board, bool isMaxPlayer)
+    public override bool EndGameReached(RawCheckersBoard board)
     {
-        int[] whoseTurn = isMaxPlayer ? new int[] { 1, 3 } : new int[] { 2, 4 };
-        int count = 0;
-
-        for(int i = 0; i < 8; i++)
-            for(int j = 0; j < 8; j++)
-                if(board.BoardMatrix[i,j] == whoseTurn[0] || board.BoardMatrix[i,j] == whoseTurn[1])
-                    count++;
-        return count;
+        return board.GetPieceCountWithMoves() == 0;
     }
 
     public override IList<MinimaxInput<RawCheckersBoard, Coord, Coord, float>> GetPositions(RawCheckersBoard baseBoard, bool isMaxPlayer)
@@ -205,6 +196,15 @@ public class RawCheckersBoard : CheckersBoardBase
             }
         }
         return moves;
+    }
+    public int GetPieceCountWithMoves()
+    {
+        int count = 0;
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++)
+                if (BoardMatrix[i, j] != 0 && GetMovesForPiece(new Coord(i, j)).Count > 0)
+                    count++;
+        return count;
     }
 }
 
