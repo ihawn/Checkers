@@ -4,18 +4,31 @@ using UnityEngine;
 using System;
 using TakeTurns;
 using TakeTurns.Containers;
+using TakeTurns.Enumerations;
 using System.Linq;
 
 public class Moves : TakeTurns<RawCheckersBoard, Coord, Coord>
 {
     public override float GetGameEvaluation(RawCheckersBoard board)
     {
+        var gameResult = EndGameReached(board);
+        if(gameResult.Item1)
+        {
+            if(gameResult.Item2 == EndState.MaxPlayerWins)
+                return float.MaxValue;
+            if(gameResult.Item2 == EndState.MinPlayerWins)
+                return float.MinValue;
+        }
+
         return Heuristics.Heuristic(board, 3);
     }
 
-    public override bool EndGameReached(RawCheckersBoard board)
+    public override (bool, EndState) EndGameReached(RawCheckersBoard board)
     {
-        return board.GetPieceCountWithMoves() == 0;
+        var pieceCounts = board.GetPieceCountsWithMoves();
+        return pieceCounts.Item1 == 0 && pieceCounts.Item2 == 0 ? (true, EndState.Tie) : 
+               pieceCounts.Item1 == 0 ? (true, EndState.MinPlayerWins) :
+               pieceCounts.Item2 == 0 ? (true, EndState.MaxPlayerWins) : (false, EndState.Tie);
     }
 
     public override IList<MinimaxInput<RawCheckersBoard, Coord, Coord, float>> GetPositions(RawCheckersBoard baseBoard, bool isMaxPlayer)
@@ -197,14 +210,18 @@ public class RawCheckersBoard : CheckersBoardBase
         }
         return moves;
     }
-    public int GetPieceCountWithMoves()
+    public (int, int) GetPieceCountsWithMoves()
     {
-        int count = 0;
+        int count1 = 0;
+        int count2 = 0;
         for (int i = 0; i < 8; i++)
             for (int j = 0; j < 8; j++)
                 if (BoardMatrix[i, j] != 0 && GetMovesForPiece(new Coord(i, j)).Count > 0)
-                    count++;
-        return count;
+                {
+                    if (BoardMatrix[i, j] == 1 || BoardMatrix[i, j] == 3) count1++; else count2++;
+                }
+
+        return (count1, count2);
     }
 }
 

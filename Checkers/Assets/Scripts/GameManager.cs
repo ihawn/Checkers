@@ -152,6 +152,7 @@ public class GameManager : MonoBehaviour
         foreach (Transform t in GlobalProperties.ContainerObject.transform)
             Destroy(t.gameObject);
         Game = new CheckersGame(Player1Type, Player2Type);
+        Highlighter.SetActive(false);
         StartCoroutine(StartGameDelay());
     }
 

@@ -11,7 +11,6 @@ public class UIController : MonoBehaviour
     public GameObject GameOverScreenWhiteWins;
     public GameObject GameOverScreenDraw;
     public GameObject GameOverlay;
-    public GameObject GameStatsWindow;
     public TextMeshProUGUI GameStatsWindowText;
     public SliderManager AnimationSpeedSlider;
     public bool InMenus;
@@ -19,7 +18,6 @@ public class UIController : MonoBehaviour
     public void ShowMenuScreen()
     {
         GameOverlay.SetActive(false);
-        GameStatsWindow.SetActive(false);
         GameOverScreenBlackWins.SetActive(false);
         GameOverScreenWhiteWins.SetActive(false);
         GameOverScreenDraw.SetActive(false);
@@ -50,22 +48,10 @@ public class UIController : MonoBehaviour
     public void ShowGameOverlay(bool showGameStats)
     {
         GameOverlay.SetActive(true);
-        GameStatsWindow.SetActive(showGameStats);
         MenuScreen.SetActive(false);
         GameOverScreenBlackWins.SetActive(false);
         GameOverScreenWhiteWins.SetActive(false);
         GameOverScreenDraw.SetActive(false);
-        PrintGameStats(-1, -1);
         InMenus = false;
-    }
-
-    public void ChangeAnimationSpeed()
-    {
-        GlobalProperties.LerpSpeed = 5 + 30 * AnimationSpeedSlider.mainSlider.value;
-    }
-
-    public void PrintGameStats(float lastMoveTime, int boardPosition)
-    {
-        GameStatsWindowText.text = "Last Move Time: " + lastMoveTime + "\nBoard Position: " + boardPosition;
     }
 }
